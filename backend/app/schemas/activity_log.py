@@ -13,13 +13,13 @@ class ActivityLogBase(BaseModel):
 
 class ActivityLogCreate(ActivityLogBase):
     user_id: str = "anonymous"
-    metadata: Optional[Dict[str, Any]] = {}
+    log_metadata: Optional[Dict[str, Any]] = {}
 
 
 class ActivityLogResponse(ActivityLogBase):
     id: int
     user_id: str
-    metadata: Dict[str, Any]
+    log_metadata: Dict[str, Any]
     created_at: datetime
 
     class Config:

@@ -18,7 +18,7 @@ class DocumentResponse(DocumentBase):
     file_size: int
     status: DocumentStatus
     chunks_count: int
-    metadata: Dict[str, Any]
+    doc_metadata: Dict[str, Any]
     upload_date: datetime
     processed_date: Optional[datetime]
     error_message: Optional[str]

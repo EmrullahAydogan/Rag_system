@@ -76,11 +76,11 @@ class AnalyticsService:
     ) -> List[Dict[str, Any]]:
         """Get top topics from analytics events"""
         results = db.query(
-            AnalyticsEvent.metadata['topic'].astext.label('topic'),
+            AnalyticsEvent.event_metadata['topic'].astext.label('topic'),
             func.count(AnalyticsEvent.id).label('count')
         ).filter(
             AnalyticsEvent.event_type == "chat_message",
-            AnalyticsEvent.metadata['topic'] != None
+            AnalyticsEvent.event_metadata['topic'] != None
         ).group_by(
             'topic'
         ).order_by(
@@ -127,7 +127,7 @@ class AnalyticsService:
         """Log an analytics event"""
         event = AnalyticsEvent(
             event_type=event_type,
-            metadata=metadata or {},
+            event_metadata=metadata or {},
             value=value
         )
         db.add(event)
@@ -168,13 +168,13 @@ class AnalyticsService:
 
         # Get usage count and average response time per model
         results = db.query(
-            AnalyticsEvent.metadata['llm_provider'].astext.label('provider'),
+            AnalyticsEvent.event_metadata['llm_provider'].astext.label('provider'),
             func.count(AnalyticsEvent.id).label('usage_count'),
             func.avg(AnalyticsEvent.value).label('avg_response_time')
         ).filter(
             AnalyticsEvent.event_type == "chat_message",
             AnalyticsEvent.timestamp >= start_date,
-            AnalyticsEvent.metadata['llm_provider'] != None
+            AnalyticsEvent.event_metadata['llm_provider'] != None
         ).group_by('provider').all()
 
         return [

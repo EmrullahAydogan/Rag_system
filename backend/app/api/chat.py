@@ -1,7 +1,7 @@
 """
 Chat API Endpoints
 """
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
@@ -326,7 +326,7 @@ def compare_models(
     models = {
         "openai": "gpt-4o-mini",  # Fast and capable
         "anthropic": "claude-3-5-sonnet-20241022",  # Latest Sonnet
-        "google": "gemini-1.5-flash"  # Fast Flash
+        "google": "models/gemini-flash-latest"  # Fast Flash
     }
 
     results = {}

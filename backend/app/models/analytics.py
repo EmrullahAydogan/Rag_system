@@ -11,7 +11,7 @@ class AnalyticsEvent(Base):
     event_type = Column(String(100), nullable=False, index=True)
     # Event types: chat_message, document_upload, search_query, etc.
 
-    metadata = Column(JSON, default={})
+    event_metadata = Column(JSON, default={})
     # Can include: query, response_time, documents_used, user_id, etc.
 
     value = Column(Float, nullable=True)  # Numeric value if applicable

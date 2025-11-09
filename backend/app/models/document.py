@@ -28,7 +28,7 @@ class Document(Base):
     )
 
     chunks_count = Column(Integer, default=0)
-    metadata = Column(JSON, default={})
+    doc_metadata = Column(JSON, default={})
 
     upload_date = Column(DateTime(timezone=True), server_default=func.now())
     processed_date = Column(DateTime(timezone=True), nullable=True)

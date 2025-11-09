@@ -20,7 +20,7 @@ class ActivityLog(Base):
     description = Column(Text, nullable=False)
 
     # Additional metadata
-    metadata = Column(JSON, default={})  # Store extra info like IP, browser, etc.
+    log_metadata = Column(JSON, default={})  # Store extra info like IP, browser, etc.
 
     # Status
     status = Column(String(20), default="success")  # success, failed, pending

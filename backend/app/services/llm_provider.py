@@ -38,10 +38,10 @@ class LLMProvider:
             "claude-3-haiku-20240307"
         ],
         "google": [
-            "gemini-1.5-pro",
-            "gemini-1.5-flash",
-            "gemini-pro",
-            "gemini-pro-vision"
+            "models/gemini-flash-latest",
+            "models/gemini-pro-latest",
+            "models/gemini-1.5-flash-latest",
+            "models/gemini-1.5-pro-latest"
         ]
     }
 
@@ -100,7 +100,7 @@ class LLMProvider:
     @staticmethod
     def _get_google(model: Optional[str], temperature: float, **kwargs):
         """Get Google Gemini LLM"""
-        model = model or "gemini-1.5-flash"  # Default to fast Flash model
+        model = model or "models/gemini-flash-latest"  # Default to fast Flash model
         return ChatGoogleGenerativeAI(
             model=model,
             temperature=temperature,

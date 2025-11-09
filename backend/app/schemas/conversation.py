@@ -11,14 +11,14 @@ class MessageBase(BaseModel):
 class MessageCreate(MessageBase):
     conversation_id: Optional[int] = None
     sources: Optional[List[Dict[str, Any]]] = []
-    metadata: Optional[Dict[str, Any]] = {}
+    msg_metadata: Optional[Dict[str, Any]] = {}
 
 
 class MessageResponse(MessageBase):
     id: int
     conversation_id: int
     sources: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    msg_metadata: Dict[str, Any]
     timestamp: datetime
 
     class Config:

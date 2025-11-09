@@ -5,14 +5,14 @@ from typing import Optional, Dict, Any
 
 class AnalyticsEventCreate(BaseModel):
     event_type: str
-    metadata: Optional[Dict[str, Any]] = {}
+    event_metadata: Optional[Dict[str, Any]] = {}
     value: Optional[float] = None
 
 
 class AnalyticsEventResponse(BaseModel):
     id: int
     event_type: str
-    metadata: Dict[str, Any]
+    event_metadata: Dict[str, Any]
     value: Optional[float]
     timestamp: datetime
 

@@ -32,7 +32,7 @@ class Message(Base):
 
     # RAG-specific fields
     sources = Column(JSON, default=[])  # List of source documents used
-    metadata = Column(JSON, default={})  # Additional metadata
+    msg_metadata = Column(JSON, default={})  # Additional metadata
 
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
