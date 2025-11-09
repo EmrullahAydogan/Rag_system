@@ -567,6 +567,12 @@ function MessageBubble({ message }: { message: Message }) {
           <span className="text-xs text-gray-500">
             {formatRelativeTime(message.timestamp)}
           </span>
+          {/* Category badge for user messages */}
+          {isUser && message.metadata?.category && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+              {message.metadata.category.category}
+            </span>
+          )}
         </div>
 
         <div className={`rounded-lg p-4 ${

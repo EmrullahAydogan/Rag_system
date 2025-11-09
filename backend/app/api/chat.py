@@ -21,6 +21,7 @@ from app.schemas import (
 from app.models import Conversation, Message, MessageFeedback
 from app.services.rag_service import RAGService
 from app.services.analytics_service import AnalyticsService
+from app.utils.categorizer import MessageCategorizer
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -61,11 +62,15 @@ def send_message(
         for msg in history_messages
     ]
 
-    # Save user message
+    # Categorize user message
+    categorization = MessageCategorizer.categorize(request.message)
+
+    # Save user message with category
     user_message = Message(
         conversation_id=conversation.id,
         role="user",
         content=request.message,
+        metadata={"category": categorization}
     )
     db.add(user_message)
     db.commit()
@@ -412,11 +417,14 @@ async def websocket_chat(websocket: WebSocket):
                     for msg in history_messages
                 ]
 
-                # Save user message
+                # Categorize and save user message
+                categorization = MessageCategorizer.categorize(message)
+
                 user_message = Message(
                     conversation_id=conversation.id,
                     role="user",
                     content=message,
+                    metadata={"category": categorization}
                 )
                 db.add(user_message)
                 db.commit()
