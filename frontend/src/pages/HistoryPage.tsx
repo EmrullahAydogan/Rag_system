@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Trash2, ExternalLink } from 'lucide-react';
+import { MessageSquare, Trash2, ExternalLink, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { chatApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatDate, formatRelativeTime } from '@/utils/format';
+import { exportAsJSON, exportAsMarkdown, exportAsText } from '@/utils/exportChat';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
@@ -98,6 +99,32 @@ export default function HistoryPage() {
                 </p>
               </div>
               <div className="flex gap-2">
+                <div className="relative group">
+                  <button className="btn-secondary text-sm flex items-center gap-2">
+                    <Download className="w-4 h-4" />
+                    Export
+                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                    <button
+                      onClick={() => exportAsJSON(conversationDetail)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+                    >
+                      Export as JSON
+                    </button>
+                    <button
+                      onClick={() => exportAsMarkdown(conversationDetail)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Export as Markdown
+                    </button>
+                    <button
+                      onClick={() => exportAsText(conversationDetail)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg"
+                    >
+                      Export as Text
+                    </button>
+                  </div>
+                </div>
                 <button
                   onClick={() => handleContinueChat(selectedConversation)}
                   className="btn-primary text-sm flex items-center gap-2"
@@ -107,7 +134,7 @@ export default function HistoryPage() {
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(selectedConversation)}
-                  className="btn-secondary text-sm flex items-center gap-2 text-red-600 hover:bg-red-50"
+                  className="btn-secondary text-sm flex items-center gap-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
