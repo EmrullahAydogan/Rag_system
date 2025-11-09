@@ -321,12 +321,12 @@ def compare_models(
 
     rag_service = RAGService()
 
-    # Get responses from all 3 providers
+    # Get responses from all 3 providers with latest models
     providers = ["openai", "anthropic", "google"]
     models = {
-        "openai": "gpt-3.5-turbo",
-        "anthropic": "claude-3-sonnet-20240229",
-        "google": "gemini-pro"
+        "openai": "gpt-4o-mini",  # Fast and capable
+        "anthropic": "claude-3-5-sonnet-20241022",  # Latest Sonnet
+        "google": "gemini-1.5-flash"  # Fast Flash
     }
 
     results = {}
