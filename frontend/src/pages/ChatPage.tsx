@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatApi } from '@/api/client';
 import type { Message, ChatRequest } from '@/types';
@@ -119,6 +119,20 @@ export default function ChatPage() {
     queryClient.removeQueries({ queryKey: ['conversation'] });
   };
 
+  // Quick question templates
+  const quickTemplates = [
+    "What's your return policy?",
+    "Tell me about shipping options",
+    "How does the warranty work?",
+    "What payment methods do you accept?",
+    "Do you offer international shipping?",
+    "How can I track my order?"
+  ];
+
+  const handleTemplateClick = (template: string) => {
+    setInput(template);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
@@ -165,16 +179,35 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {messages.length === 0 && !sendMessageMutation.isPending && (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center">
+            <div className="text-center max-w-3xl">
               <Bot className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Welcome to TechStore AI Support
               </h3>
-              <p className="text-gray-500 max-w-md">
+              <p className="text-gray-500 max-w-md mx-auto mb-6">
                 I can help you with product information, returns, warranties, shipping, and more.
                 <br />
                 Start by asking a question!
               </p>
+
+              {/* Quick Templates */}
+              <div className="mt-6">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Zap className="w-4 h-4 text-primary-600" />
+                  <p className="text-sm font-medium text-gray-700">Quick Questions</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+                  {quickTemplates.map((template, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleTemplateClick(template)}
+                      className="text-sm text-left px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors text-gray-700"
+                    >
+                      {template}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -241,6 +274,25 @@ export default function ChatPage() {
       {/* Input */}
       <div className="bg-white border-t border-gray-200 px-6 py-4">
         <div className="max-w-4xl mx-auto">
+          {/* Quick Templates - Always visible */}
+          {messages.length > 0 && (
+            <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-2">
+              <Zap className="w-3.5 h-3.5 text-primary-600 flex-shrink-0" />
+              <div className="flex gap-2">
+                {quickTemplates.slice(0, 4).map((template, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleTemplateClick(template)}
+                    disabled={sendMessageMutation.isPending || isStreaming || isTyping}
+                    className="text-xs px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full hover:border-primary-400 hover:bg-primary-50 transition-colors text-gray-700 whitespace-nowrap disabled:opacity-50"
+                  >
+                    {template}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-4">
             <textarea
               value={input}
