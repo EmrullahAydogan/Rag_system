@@ -44,7 +44,7 @@ export default function ActivityLogsPage() {
       case 'pending':
         return <Clock className="w-5 h-5 text-yellow-600" />;
       default:
-        return <AlertCircle className="w-5 h-5 text-gray-600" />;
+        return <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />;
     }
   };
 
@@ -71,31 +71,31 @@ export default function ActivityLogsPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Activity className="w-8 h-8 text-primary-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Activity Logs</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Activity Logs</h1>
             <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
               Live
             </span>
           </div>
-          <p className="text-gray-600">Monitor all system activities and user actions</p>
+          <p className="text-gray-600 dark:text-gray-400">Monitor all system activities and user actions</p>
         </div>
 
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="card">
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-medium text-gray-600 mb-1">Total Activities</h3>
-              <p className="text-3xl font-bold text-gray-900">{stats.total_logs}</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total_logs}</p>
             </div>
-            <div className="card">
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-medium text-gray-600 mb-1">Most Common Action</h3>
               <p className="text-xl font-bold text-primary-600">
                 {stats.by_action?.[0]?.action || 'N/A'}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {stats.by_action?.[0]?.count || 0} times
               </p>
             </div>
-            <div className="card">
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-medium text-gray-600 mb-1">Success Rate</h3>
               <p className="text-3xl font-bold text-green-600">
                 {stats.by_status && stats.total_logs > 0
@@ -107,7 +107,7 @@ export default function ActivityLogsPage() {
         )}
 
         {/* Filters */}
-        <div className="card mb-6">
+        <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -149,7 +149,7 @@ export default function ActivityLogsPage() {
         </div>
 
         {/* Logs Table */}
-        <div className="card">
+        <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b border-gray-200">
@@ -185,21 +185,21 @@ export default function ActivityLogsPage() {
                           {log.action_type}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                         {log.description}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {log.resource_type}
                         {log.resource_id && ` #${log.resource_id}`}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                         {formatRelativeTime(log.created_at)}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No activity logs found
                     </td>
                   </tr>

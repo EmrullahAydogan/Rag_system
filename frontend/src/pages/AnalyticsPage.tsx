@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import { MessageSquare, FileText, TrendingUp, Star, Clock, Zap, Users, Activity } from 'lucide-react';
 import { analyticsApi } from '@/api/client';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingSpinner;
+import { useTheme } from "@/contexts/ThemeContext" from '@/components/LoadingSpinner';
 
 const COLORS = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -105,7 +106,7 @@ export default function AnalyticsPage() {
               {isRealTime ? 'Real-Time ON' : 'Real-Time OFF'}
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Time Range:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Time Range:</span>
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(Number(e.target.value))}
@@ -154,22 +155,22 @@ export default function AnalyticsPage() {
         {/* Secondary Stats */}
         {summary && (
           <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="card">
-              <p className="text-sm text-gray-600">Avg Messages per Conversation</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Avg Messages per Conversation</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 {summary.avg_messages_per_conversation.toFixed(1)}
               </p>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-600">Avg Response Time</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 {summary.avg_response_time
                   ? `${summary.avg_response_time.toFixed(2)}s`
                   : 'N/A'}
               </p>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-600">Total Feedback</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Feedback</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 {summary.total_feedback}
               </p>
@@ -180,7 +181,7 @@ export default function AnalyticsPage() {
         {/* Charts */}
         <div className="grid grid-cols-2 gap-6 mb-8">
           {/* Time Series Chart */}
-          <div className="card">
+          <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4">Conversations Over Time (7 Days)</h2>
             {timeSeriesLoading ? (
               <LoadingSpinner />
@@ -206,7 +207,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Topics Chart */}
-          <div className="card">
+          <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4">Top Discussion Topics</h2>
             {topicsLoading ? (
               <LoadingSpinner />
@@ -231,36 +232,36 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-3 gap-6 mb-8">
             {userEngagement && (
               <>
-                <div className="card">
+                <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="w-5 h-5 text-blue-500" />
-                    <p className="text-sm text-gray-600">Active Days</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Active Days</p>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {userEngagement.active_days} / {userEngagement.period_days}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {((userEngagement.active_days / userEngagement.period_days) * 100).toFixed(0)}% active
                   </p>
                 </div>
-                <div className="card">
+                <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-5 h-5 text-green-500" />
-                    <p className="text-sm text-gray-600">Avg Conversations/Day</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Avg Conversations/Day</p>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {userEngagement.avg_conversations_per_day.toFixed(1)}
                   </p>
                 </div>
               </>
             )}
             {conversationMetrics && (
-              <div className="card">
+              <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="w-5 h-5 text-purple-500" />
-                  <p className="text-sm text-gray-600">Avg Conversation Length</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Avg Conversation Length</p>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {conversationMetrics.avg_conversation_length.toFixed(1)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
@@ -274,7 +275,7 @@ export default function AnalyticsPage() {
         {/* Response Times & Model Performance */}
         <div className="grid grid-cols-2 gap-6 mb-8">
           {/* Response Times */}
-          <div className="card">
+          <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-500" />
               Response Times Over Time
@@ -319,7 +320,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Model Performance */}
-          <div className="card">
+          <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-500" />
               Model Performance
@@ -332,7 +333,7 @@ export default function AnalyticsPage() {
                       <span className="font-medium text-gray-900 capitalize">
                         {model.provider}
                       </span>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         {model.usage_count} uses
                       </span>
                     </div>
@@ -360,7 +361,7 @@ export default function AnalyticsPage() {
 
         {/* Peak Hours */}
         {peakHours && peakHours.length > 0 && (
-          <div className="card mb-8">
+          <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-8">
             <h2 className="text-xl font-semibold mb-4">Peak Usage Hours</h2>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={peakHours}>
@@ -399,10 +400,10 @@ function StatCard({
   suffix?: string;
 }) {
   return (
-    <div className="card">
+    <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-600">{title}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
           <p className="text-3xl font-bold text-gray-900 mt-2">
             {value}
             {suffix && <span className="text-lg text-gray-500">{suffix}</span>}

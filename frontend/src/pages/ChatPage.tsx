@@ -9,6 +9,7 @@ import { formatRelativeTime } from '@/utils/format';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { exportConversationToPDF } from '@/utils/pdfExport';
 import { useToast } from '@/contexts/ToastContext';
+import { themeClasses } from '@/utils/theme-classes';
 
 export default function ChatPage() {
   const toast = useToast();
@@ -289,29 +290,29 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             {conversation?.title || 'New Chat'}
             {useWebSocketMode && (
               <span className="inline-flex items-center gap-1 text-xs font-normal">
                 {isConnected ? (
                   <>
-                    <Wifi className="w-3 h-3 text-green-500" />
-                    <span className="text-green-600">Live</span>
+                    <Wifi className="w-3 h-3 text-green-500 dark:text-green-400" />
+                    <span className="text-green-600 dark:text-green-400">Live</span>
                   </>
                 ) : (
                   <>
-                    <WifiOff className="w-3 h-3 text-gray-400" />
-                    <span className="text-gray-500">Offline</span>
+                    <WifiOff className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                    <span className="text-gray-500 dark:text-gray-400">Offline</span>
                   </>
                 )}
               </span>
             )}
           </h2>
-          <p className="text-sm text-gray-500">Ask anything about our products and services</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Ask anything about our products and services</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -364,11 +365,11 @@ export default function ChatPage() {
         {messages.length === 0 && !sendMessageMutation.isPending && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-3xl">
-              <Bot className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <Bot className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Welcome to TechStore AI Support
               </h3>
-              <p className="text-gray-500 max-w-md mx-auto mb-6">
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
                 I can help you with product information, returns, warranties, shipping, and more.
                 <br />
                 Start by asking a question!
@@ -377,15 +378,15 @@ export default function ChatPage() {
               {/* Quick Templates */}
               <div className="mt-6">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Zap className="w-4 h-4 text-primary-600" />
-                  <p className="text-sm font-medium text-gray-700">Quick Questions</p>
+                  <Zap className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Quick Questions</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
                   {quickTemplates.map((template, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleTemplateClick(template)}
-                      className="text-sm text-left px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors text-gray-700"
+                      className="text-sm text-left px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
                     >
                       {template}
                     </button>
@@ -404,15 +405,15 @@ export default function ChatPage() {
           {/* Typing indicator */}
           {isTyping && !isStreaming && (
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                <Bot className="w-6 h-6 text-primary-600" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                <Bot className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="flex-1">
-                <div className="bg-white border border-gray-200 rounded-lg p-4 inline-block">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 inline-block">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                 </div>
               </div>
@@ -422,16 +423,16 @@ export default function ChatPage() {
           {/* Streaming message */}
           {isStreaming && streamingMessage && (
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                <Bot className="w-6 h-6 text-primary-600" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                <Bot className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-sm">AI Assistant</span>
-                  <span className="text-xs text-green-600">Typing...</span>
+                  <span className="font-medium text-sm text-gray-900 dark:text-white">AI Assistant</span>
+                  <span className="text-xs text-green-600 dark:text-green-400">Typing...</span>
                 </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="prose prose-sm max-w-none">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
                     <ReactMarkdown>{streamingMessage}</ReactMarkdown>
                   </div>
                 </div>
@@ -456,19 +457,19 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Model Selector Panel */}
           {showModelSelector && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-900">Select AI Model</h3>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">Select AI Model</h3>
                 <button
                   onClick={() => {
                     setSelectedProvider('');
                     setSelectedModel('');
                   }}
-                  className="text-xs text-gray-600 hover:text-gray-700"
+                  className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   Clear
                 </button>
@@ -478,7 +479,7 @@ export default function ChatPage() {
                 <div className="space-y-3">
                   {/* Provider Selection */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Provider
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -491,8 +492,8 @@ export default function ChatPage() {
                           }}
                           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                             selectedProvider === provider.provider
-                              ? 'bg-primary-500 text-white'
-                              : 'bg-white border border-gray-200 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                              ? 'bg-primary-500 dark:bg-primary-600 text-white'
+                              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-gray-700'
                           }`}
                         >
                           {provider.provider === 'openai' && '🤖 OpenAI'}
@@ -506,7 +507,7 @@ export default function ChatPage() {
                   {/* Model Selection */}
                   {selectedProvider && availableModels.length > 0 && (
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Model
                       </label>
                       <div className="grid grid-cols-2 gap-2">
@@ -516,8 +517,8 @@ export default function ChatPage() {
                             onClick={() => setSelectedModel(model)}
                             className={`px-3 py-2 rounded-lg text-xs transition-colors text-left ${
                               selectedModel === model
-                                ? 'bg-primary-500 text-white'
-                                : 'bg-white border border-gray-200 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                                ? 'bg-primary-500 dark:bg-primary-600 text-white'
+                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-gray-700'
                             }`}
                           >
                             {model}
@@ -528,32 +529,32 @@ export default function ChatPage() {
                   )}
 
                   {selectedProvider && selectedModel && (
-                    <p className="text-xs text-gray-600 mt-2">
-                      Using <strong>{selectedProvider}</strong> with model <strong>{selectedModel}</strong>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                      Using <strong className="text-gray-900 dark:text-white">{selectedProvider}</strong> with model <strong className="text-gray-900 dark:text-white">{selectedModel}</strong>
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Loading providers...</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Loading providers...</p>
               )}
             </div>
           )}
 
           {/* Document Selector Panel */}
           {showDocSelector && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-900">Filter by Documents</h3>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">Filter by Documents</h3>
                 <div className="flex gap-2">
                   <button
                     onClick={selectAllDocuments}
-                    className="text-xs text-primary-600 hover:text-primary-700"
+                    className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
                   >
                     Select All
                   </button>
                   <button
                     onClick={clearDocumentSelection}
-                    className="text-xs text-gray-600 hover:text-gray-700"
+                    className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   >
                     Clear
                   </button>
@@ -567,27 +568,27 @@ export default function ChatPage() {
                       key={doc.id}
                       className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                         selectedDocuments.includes(doc.id)
-                          ? 'bg-primary-50 border border-primary-200'
-                          : 'bg-white border border-gray-200 hover:border-gray-300'
+                          ? 'bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700'
+                          : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={selectedDocuments.includes(doc.id)}
                         onChange={() => toggleDocument(doc.id)}
-                        className="rounded text-primary-600"
+                        className="rounded text-primary-600 dark:text-primary-500"
                       />
-                      <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-900 truncate">{doc.filename}</span>
+                      <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-900 dark:text-gray-100 truncate">{doc.filename}</span>
                     </label>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No documents available. Upload documents first.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No documents available. Upload documents first.</p>
               )}
 
               {selectedDocuments.length > 0 && (
-                <p className="text-xs text-gray-600 mt-3">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
                   {selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} selected. Chat will only use context from these documents.
                 </p>
               )}
@@ -597,14 +598,14 @@ export default function ChatPage() {
           {/* Quick Templates - Always visible */}
           {messages.length > 0 && (
             <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-2">
-              <Zap className="w-3.5 h-3.5 text-primary-600 flex-shrink-0" />
+              <Zap className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
               <div className="flex gap-2">
                 {quickTemplates.slice(0, 4).map((template, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleTemplateClick(template)}
                     disabled={sendMessageMutation.isPending || isStreaming || isTyping}
-                    className="text-xs px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full hover:border-primary-400 hover:bg-primary-50 transition-colors text-gray-700 whitespace-nowrap disabled:opacity-50"
+                    className="text-xs px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 whitespace-nowrap disabled:opacity-50"
                   >
                     {template}
                   </button>
@@ -620,7 +621,7 @@ export default function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder={isListening ? "Listening..." : "Type your message here..."}
-                className="w-full input resize-none pr-12"
+                className="w-full input resize-none pr-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 rows={3}
                 disabled={sendMessageMutation.isPending || isStreaming || isTyping}
               />
@@ -630,8 +631,8 @@ export default function ChatPage() {
                 disabled={sendMessageMutation.isPending || isStreaming || isTyping}
                 className={`absolute right-3 bottom-3 p-2 rounded-full transition-all ${
                   isRecording
-                    ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-red-500 dark:bg-red-600 text-white hover:bg-red-600 dark:hover:bg-red-700 animate-pulse'
+                    : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                 title={isRecording ? 'Stop recording' : 'Start voice input'}
               >
@@ -672,41 +673,41 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div className="flex gap-4">
       <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-gray-200' : 'bg-primary-100'
+        isUser ? 'bg-gray-200 dark:bg-gray-700' : 'bg-primary-100 dark:bg-primary-900'
       }`}>
         {isUser ? (
-          <User className="w-6 h-6 text-gray-600" />
+          <User className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         ) : (
-          <Bot className="w-6 h-6 text-primary-600" />
+          <Bot className="w-6 h-6 text-primary-600 dark:text-primary-400" />
         )}
       </div>
 
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-sm">
+          <span className="font-medium text-sm text-gray-900 dark:text-white">
             {isUser ? 'You' : 'AI Assistant'}
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             {formatRelativeTime(message.timestamp)}
           </span>
           {/* Category badge for user messages */}
-          {isUser && message.metadata?.category && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-              {message.metadata.category.category}
+          {isUser && message.msg_metadata?.category && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-medium">
+              {message.msg_metadata.category.category}
             </span>
           )}
         </div>
 
         <div className={`rounded-lg p-4 ${
-          isUser ? 'bg-gray-100' : 'bg-white border border-gray-200'
+          isUser ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
         }`}>
-          <div className="prose prose-sm max-w-none">
+          <div className="prose prose-sm max-w-none dark:prose-invert">
             <ReactMarkdown>{message.content}</ReactMarkdown>
           </div>
 
           {!isUser && message.sources && message.sources.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-1">
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
                 <FileText className="w-3 h-3" />
                 Sources:
               </p>
@@ -714,7 +715,7 @@ function MessageBubble({ message }: { message: Message }) {
                 {message.sources.map((source, idx) => (
                   <span
                     key={idx}
-                    className="text-xs bg-primary-50 text-primary-700 px-2 py-1 rounded"
+                    className="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-2 py-1 rounded"
                   >
                     {source.filename}
                   </span>
@@ -725,15 +726,15 @@ function MessageBubble({ message }: { message: Message }) {
 
           {/* Feedback buttons for AI messages */}
           {!isUser && (
-            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
-              <span className="text-xs text-gray-500">Was this helpful?</span>
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400">Was this helpful?</span>
               <button
                 onClick={() => handleFeedback('positive')}
                 disabled={feedback !== null}
                 className={`p-1.5 rounded transition-colors ${
                   feedback === 'positive'
-                    ? 'bg-green-100 text-green-600'
-                    : 'hover:bg-gray-100 text-gray-400 hover:text-green-600'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400'
                 }`}
                 title="Helpful"
               >
@@ -744,15 +745,15 @@ function MessageBubble({ message }: { message: Message }) {
                 disabled={feedback !== null}
                 className={`p-1.5 rounded transition-colors ${
                   feedback === 'negative'
-                    ? 'bg-red-100 text-red-600'
-                    : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400'
                 }`}
                 title="Not helpful"
               >
                 <ThumbsDown className="w-4 h-4" />
               </button>
               {feedback && (
-                <span className="text-xs text-gray-500 ml-2">Thank you for your feedback!</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Thank you for your feedback!</span>
               )}
             </div>
           )}

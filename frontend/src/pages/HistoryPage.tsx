@@ -95,8 +95,8 @@ export default function HistoryPage() {
     <div className="h-screen flex bg-gray-50">
       {/* Conversations List */}
       <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">Chat History</h1>
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chat History</h1>
           <p className="text-sm text-gray-600 mt-1">
             {filteredConversations.length} of {conversations?.length || 0} conversations
           </p>
@@ -117,7 +117,7 @@ export default function HistoryPage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -183,7 +183,7 @@ export default function HistoryPage() {
           ) : (
             <div className="p-8 text-center">
               <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No conversations yet</p>
+              <p className="text-gray-500 dark:text-gray-400">No conversations yet</p>
             </div>
           )}
         </div>
@@ -195,7 +195,7 @@ export default function HistoryPage() {
           <>
             <div className="bg-white border-b border-gray-200 p-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {conversationDetail.title}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
@@ -261,14 +261,14 @@ export default function HistoryPage() {
                       <span className="font-medium text-sm">
                         {message.role === 'user' ? 'You' : 'AI Assistant'}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {formatRelativeTime(message.timestamp)}
                       </span>
                     </div>
                     <p className="text-gray-900 whitespace-pre-wrap">{message.content}</p>
 
                     {message.sources && message.sources.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <p className="text-xs text-gray-600 mb-2">Sources:</p>
                         <div className="flex flex-wrap gap-2">
                           {message.sources.map((source, idx) => (
@@ -291,7 +291,7 @@ export default function HistoryPage() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">Select a conversation to view details</p>
+              <p className="text-gray-500 dark:text-gray-400">Select a conversation to view details</p>
             </div>
           </div>
         )}

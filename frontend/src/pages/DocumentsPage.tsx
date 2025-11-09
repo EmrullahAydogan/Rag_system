@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatDate, formatFileSize } from '@/utils/format';
 import type { Document, Tag as TagType } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
+import { themeClasses } from '@/utils/theme-classes';
 
 interface UploadingFile {
   file: File;
@@ -164,11 +165,11 @@ export default function DocumentsPage() {
   });
 
   return (
-    <div className="h-screen overflow-auto bg-gray-50">
+    <div className="h-screen overflow-auto bg-gray-50 dark:bg-gray-900">
       <div className="p-8 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Document Management</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Document Management</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Upload and manage knowledge base documents for the AI assistant
           </p>
         </div>
@@ -176,29 +177,29 @@ export default function DocumentsPage() {
         {/* Stats */}
         {stats && (
           <div className="grid grid-cols-4 gap-6 mb-8">
-            <div className="card">
-              <p className="text-sm text-gray-600">Total Documents</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total_documents}</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Documents</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stats.total_documents}</p>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-600">Completed</p>
-              <p className="text-3xl font-bold text-green-600 mt-1">{stats.completed_documents}</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.completed_documents}</p>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-600">Total Chunks</p>
-              <p className="text-3xl font-bold text-primary-600 mt-1">{stats.total_chunks}</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Chunks</p>
+              <p className="text-3xl font-bold text-primary-600 dark:text-primary-400 mt-1">{stats.total_chunks}</p>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-600">Embedding Model</p>
-              <p className="text-sm font-medium text-gray-900 mt-1">{stats.embedding_model}</p>
+            <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Embedding Model</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{stats.embedding_model}</p>
             </div>
           </div>
         )}
 
         {/* Tags Management */}
-        <div className="card mb-8">
+        <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Tags</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tags</h2>
             <button
               onClick={() => setShowCreateTag(true)}
               className="btn-primary text-sm flex items-center gap-2"
@@ -210,8 +211,8 @@ export default function DocumentsPage() {
 
           {/* Create Tag Form */}
           {showCreateTag && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-medium mb-3">Create New Tag</h3>
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-medium mb-3 text-gray-900 dark:text-white">Create New Tag</h3>
               <div className="flex gap-3">
                 <input
                   type="text"
@@ -272,30 +273,30 @@ export default function DocumentsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">No tags created yet. Create your first tag to organize documents.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No tags created yet. Create your first tag to organize documents.</p>
           )}
         </div>
 
         {/* Upload area */}
-        <div className="card mb-8">
+        <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-8">
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
               isDragActive
-                ? 'border-primary-500 bg-primary-50'
-                : 'border-gray-300 hover:border-primary-400'
+                ? 'border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500'
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
             {isDragActive ? (
-              <p className="text-lg text-primary-600">Drop the files here...</p>
+              <p className="text-lg text-primary-600 dark:text-primary-400">Drop the files here...</p>
             ) : (
               <>
-                <p className="text-lg text-gray-700 mb-2">
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">
                   Drag & drop files here, or click to select
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Supported formats: PDF, TXT, DOCX, MD
                 </p>
               </>
@@ -305,7 +306,7 @@ export default function DocumentsPage() {
           {/* Uploading files */}
           {uploadingFiles.length > 0 && (
             <div className="mt-6 space-y-3">
-              <h3 className="text-sm font-medium text-gray-700">Uploading files</h3>
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploading files</h3>
               {uploadingFiles.map((uploadingFile, index) => (
                 <UploadingFileItem
                   key={index}
@@ -318,8 +319,8 @@ export default function DocumentsPage() {
         </div>
 
         {/* Documents list */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">Documents</h2>
+        <div className="card bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Documents</h2>
 
           {isLoading ? (
             <LoadingSpinner />
@@ -336,8 +337,8 @@ export default function DocumentsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <File className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No documents uploaded yet</p>
+              <File className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">No documents uploaded yet</p>
             </div>
           )}
         </div>
@@ -387,14 +388,14 @@ function UploadingFileItem({
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="flex-shrink-0">
         {getFileIcon(uploadingFile.file.name)}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <p className="font-medium text-sm text-gray-900 truncate">
+          <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
             {uploadingFile.file.name}
           </p>
           <span className={`text-xs font-medium ${statusColor[uploadingFile.status]}`}>
@@ -402,18 +403,18 @@ function UploadingFileItem({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
           <span>{formatFileSize(uploadingFile.file.size)}</span>
         </div>
 
         {/* Progress bar */}
         {(uploadingFile.status === 'uploading' || uploadingFile.status === 'processing') && (
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
             <div
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 uploadingFile.status === 'processing'
-                  ? 'bg-yellow-500 animate-pulse'
-                  : 'bg-blue-500'
+                  ? 'bg-yellow-500 dark:bg-yellow-400 animate-pulse'
+                  : 'bg-blue-500 dark:bg-blue-400'
               }`}
               style={{ width: `${uploadingFile.progress}%` }}
             />
@@ -421,21 +422,21 @@ function UploadingFileItem({
         )}
 
         {uploadingFile.status === 'completed' && (
-          <div className="flex items-center gap-1 text-green-600">
+          <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
             <CheckCircle className="w-4 h-4" />
             <span className="text-xs">Upload successful</span>
           </div>
         )}
 
         {uploadingFile.status === 'error' && uploadingFile.error && (
-          <p className="text-xs text-red-600">{uploadingFile.error}</p>
+          <p className="text-xs text-red-600 dark:text-red-400">{uploadingFile.error}</p>
         )}
       </div>
 
       {uploadingFile.status === 'error' && (
         <button
           onClick={onRemove}
-          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
           title="Remove"
         >
           <X className="w-4 h-4" />
@@ -491,13 +492,13 @@ function DocumentItem({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+    <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750">
       <div className="flex items-center gap-4 flex-1">
-        <File className="w-8 h-8 text-gray-400" />
+        <File className="w-8 h-8 text-gray-400 dark:text-gray-500" />
 
         <div className="flex-1">
-          <p className="font-medium text-gray-900">{document.filename}</p>
-          <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+          <p className="font-medium text-gray-900 dark:text-white">{document.filename}</p>
+          <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
             <span>{formatFileSize(document.file_size)}</span>
             <span>•</span>
             <span>{document.chunks_count} chunks</span>
@@ -505,7 +506,7 @@ function DocumentItem({
             <span>{formatDate(document.upload_date)}</span>
           </div>
           {document.error_message && (
-            <p className="text-sm text-red-600 mt-1">{document.error_message}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{document.error_message}</p>
           )}
 
           {/* Document Tags */}
@@ -553,7 +554,7 @@ function DocumentItem({
 
           {/* Tag Dropdown */}
           {showTagMenu && availableTagsToAdd.length > 0 && (
-            <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
               <div className="p-2 max-h-48 overflow-y-auto">
                 {availableTagsToAdd.map((tag) => (
                   <button
@@ -562,7 +563,7 @@ function DocumentItem({
                       addTagMutation.mutate(tag.id);
                       setShowTagMenu(false);
                     }}
-                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white"
                   >
                     <Tag
                       className="w-3 h-3"
@@ -578,7 +579,7 @@ function DocumentItem({
 
         <button
           onClick={onDelete}
-          className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
           title="Delete document"
         >
           <Trash2 className="w-5 h-5" />
