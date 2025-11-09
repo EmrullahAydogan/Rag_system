@@ -26,6 +26,9 @@ A production-ready, full-stack **Retrieval-Augmented Generation (RAG)** customer
 
 ### 🤖 Core AI Capabilities
 - **Multi-LLM Support**: Choose between OpenAI GPT, Anthropic Claude, or Google Gemini
+- **🆕 Real-Time Model Selection**: Switch between AI models during chat (GPT-4o, Claude 3.5, Gemini 1.5)
+- **🆕 Dynamic Model Discovery**: Automatically fetches available models from OpenAI API
+- **🆕 Latest Models Support**: Access to GPT-4o, GPT-4o-mini, Claude 3.5 Sonnet/Haiku, Gemini 1.5 Pro/Flash
 - **RAG Pipeline**: Semantic search with ChromaDB vector database
 - **Context-Aware Responses**: Intelligent retrieval with source attribution
 - **Auto-Categorization**: Automatic message classification by topic
@@ -42,6 +45,8 @@ A production-ready, full-stack **Retrieval-Augmented Generation (RAG)** customer
 
 ### 💬 Chat Experience
 - **Real-Time Chat**: WebSocket-based instant messaging
+- **🆕 Embeddable Widget**: Standalone chat widget for embedding on any website
+- **🆕 Customizable Widget**: Configurable colors, position, and title via URL parameters
 - **Chat Templates**: Quick-start questions for common topics
 - **Voice Input**: Speech-to-text for hands-free interaction
 - **Message Feedback**: Thumbs up/down rating system
@@ -312,13 +317,21 @@ VITE_API_URL=http://localhost:8000
 ### 2. Chat with AI
 
 1. Go to **Chat** page
-2. Select LLM provider and model from dropdown
+2. **🆕 Select AI Model**: Click "Model" button to choose:
+   - **Provider**: OpenAI, Anthropic, or Google
+   - **Model**: Select from available models (e.g., GPT-4o, Claude 3.5 Sonnet, Gemini 1.5)
+   - Models are fetched dynamically based on your API key permissions
 3. Choose chat templates for quick questions, or type your own
 4. Use 🎤 **voice input** button for speech-to-text
 5. Filter by specific documents for focused answers
 6. View AI response with **source attribution**
 7. Rate responses with 👍/👎 feedback
 8. Export conversation as **PDF report**
+
+**Available Models:**
+- **OpenAI**: GPT-4o, GPT-4o-mini, GPT-4-turbo, GPT-4, GPT-3.5-turbo
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku, Claude 3 Opus/Sonnet/Haiku
+- **Google**: Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini Pro
 
 ### 3. Compare LLM Responses
 
@@ -358,6 +371,33 @@ VITE_API_URL=http://localhost:8000
 4. Search by description
 5. View statistics and trends
 
+### 7. 🆕 Use Embedded Chat Widget
+
+**Embed AI chat on any website:**
+
+1. **Access Widget Page**: `http://localhost:5173/embed`
+2. **Customize with URL Parameters**:
+   ```html
+   <iframe
+     src="http://localhost:5173/embed?position=bottom-right&color=%233b82f6&title=AI%20Support"
+     style="position: fixed; bottom: 0; right: 0; width: 100%; height: 100%; border: none; pointer-events: none;"
+     allow="clipboard-read; clipboard-write"
+   ></iframe>
+   ```
+
+3. **Configuration Options**:
+   - `position`: `bottom-right` or `bottom-left`
+   - `color`: Hex color (URL encoded, e.g., `%233b82f6` for #3b82f6)
+   - `title`: Widget header text (URL encoded)
+
+4. **Features**:
+   - Model selection within widget
+   - Minimizable interface
+   - Fully responsive design
+   - Same AI capabilities as main app
+
+5. **View Documentation**: Open `frontend/public/embed-example.html` for examples and integration guide
+
 ## 📚 API Documentation
 
 ### Interactive API Docs
@@ -378,12 +418,14 @@ GET  /api/auth/me               # Get current user
 
 #### Chat
 ```
-POST   /api/chat/               # Send message
+POST   /api/chat/               # Send message (supports llm_provider & model params)
 GET    /api/chat/conversations  # List conversations
 GET    /api/chat/conversations/{id}  # Get conversation
 DELETE /api/chat/conversations/{id}  # Delete conversation
 POST   /api/chat/feedback       # Submit message rating
+GET    /api/chat/providers      # 🆕 Get available LLM providers and models
 POST   /api/chat/compare        # Compare LLM responses
+WS     /api/chat/ws             # WebSocket for real-time chat
 ```
 
 #### Documents
@@ -472,10 +514,13 @@ rag_system/
 │   │   │   ├── Layout.tsx          # Main layout
 │   │   │   ├── ThemeToggle.tsx     # Dark mode toggle
 │   │   │   ├── Toast.tsx           # Notification toasts
+│   │   │   ├── ChatWidget.tsx      # 🆕 Embeddable chat widget
 │   │   │   └── ...                 # Other components
 │   │   ├── contexts/               # React contexts
 │   │   │   ├── AuthContext.tsx     # Auth state
 │   │   │   └── ToastContext.tsx    # Toast notifications
+│   │   ├── hooks/                  # Custom React hooks
+│   │   │   └── useWebSocket.ts     # WebSocket hook
 │   │   ├── pages/                  # Page components
 │   │   │   ├── ChatPage.tsx        # Main chat interface
 │   │   │   ├── DocumentsPage.tsx   # Document management
@@ -483,16 +528,21 @@ rag_system/
 │   │   │   ├── AnalyticsPage.tsx   # Analytics dashboard
 │   │   │   ├── ActivityLogsPage.tsx # Activity logs
 │   │   │   ├── HistoryPage.tsx     # Chat history
+│   │   │   ├── EmbedPage.tsx       # 🆕 Standalone embed page
 │   │   │   ├── LoginPage.tsx       # Login
 │   │   │   └── RegisterPage.tsx    # Registration
 │   │   ├── types/                  # TypeScript types
 │   │   ├── utils/                  # Utility functions
 │   │   │   ├── cn.ts               # Class name utils
 │   │   │   └── pdfExport.ts        # PDF generation
+│   │   ├── vite-env.d.ts           # 🆕 Vite environment types
 │   │   ├── App.tsx                 # Main app component
 │   │   └── main.tsx                # Entry point
+│   ├── public/
+│   │   └── embed-example.html      # 🆕 Widget integration guide
 │   ├── package.json
 │   ├── tailwind.config.js
+│   ├── tsconfig.json
 │   └── .env.example
 ├── sample_documents/               # Sample knowledge base
 │   ├── product_catalog.md
