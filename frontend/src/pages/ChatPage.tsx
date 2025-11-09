@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Bot, User, FileText, Wifi, WifiOff } from 'lucide-react';
+import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatApi } from '@/api/client';
 import type { Message, ChatRequest } from '@/types';
@@ -267,6 +267,20 @@ export default function ChatPage() {
 
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
+  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null);
+
+  const feedbackMutation = useMutation({
+    mutationFn: (rating: number) => chatApi.addFeedback(message.id, rating),
+    onSuccess: () => {
+      // Feedback submitted successfully
+    },
+  });
+
+  const handleFeedback = (type: 'positive' | 'negative') => {
+    const rating = type === 'positive' ? 1 : -1;
+    setFeedback(type);
+    feedbackMutation.mutate(rating);
+  };
 
   return (
     <div className="flex gap-4">
@@ -313,6 +327,40 @@ function MessageBubble({ message }: { message: Message }) {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Feedback buttons for AI messages */}
+          {!isUser && (
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+              <span className="text-xs text-gray-500">Was this helpful?</span>
+              <button
+                onClick={() => handleFeedback('positive')}
+                disabled={feedback !== null}
+                className={`p-1.5 rounded transition-colors ${
+                  feedback === 'positive'
+                    ? 'bg-green-100 text-green-600'
+                    : 'hover:bg-gray-100 text-gray-400 hover:text-green-600'
+                }`}
+                title="Helpful"
+              >
+                <ThumbsUp className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleFeedback('negative')}
+                disabled={feedback !== null}
+                className={`p-1.5 rounded transition-colors ${
+                  feedback === 'negative'
+                    ? 'bg-red-100 text-red-600'
+                    : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+                }`}
+                title="Not helpful"
+              >
+                <ThumbsDown className="w-4 h-4" />
+              </button>
+              {feedback && (
+                <span className="text-xs text-gray-500 ml-2">Thank you for your feedback!</span>
+              )}
             </div>
           )}
         </div>
