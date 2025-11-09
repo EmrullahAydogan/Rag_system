@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, Trash2, CheckCircle, XCircle, Clock, FileText, FileImage, FileCode, X } from 'lucide-react';
-import { documentsApi } from '@/api/client';
+import { Upload, File, Trash2, CheckCircle, XCircle, Clock, FileText, FileImage, FileCode, X, Tag, Plus } from 'lucide-react';
+import { documentsApi, tagsApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatDate, formatFileSize } from '@/utils/format';
 import type { Document } from '@/types';
