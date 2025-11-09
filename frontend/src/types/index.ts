@@ -59,6 +59,7 @@ export interface ChatRequest {
   conversation_id?: number;
   llm_provider?: string;
   model?: string;
+  document_ids?: number[];
 }
 
 export interface AnalyticsSummary {

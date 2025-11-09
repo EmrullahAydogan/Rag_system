@@ -78,6 +78,7 @@ def send_message(
             conversation_history=conversation_history,
             llm_provider=request.llm_provider,
             model=request.model,
+            document_ids=request.document_ids,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RAG service error: {str(e)}")
@@ -361,6 +362,7 @@ async def websocket_chat(websocket: WebSocket):
             conversation_id = message_data.get("conversation_id")
             llm_provider = message_data.get("llm_provider", "openai")
             model = message_data.get("model")
+            document_ids = message_data.get("document_ids")
 
             if not message:
                 await websocket.send_json({
@@ -441,6 +443,7 @@ async def websocket_chat(websocket: WebSocket):
                         conversation_history=conversation_history,
                         llm_provider=llm_provider,
                         model=model,
+                        document_ids=document_ids,
                     )
 
                     # Simulate streaming by sending chunks

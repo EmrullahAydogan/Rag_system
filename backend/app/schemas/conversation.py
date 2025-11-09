@@ -77,3 +77,4 @@ class ChatRequest(BaseModel):
     conversation_id: Optional[int] = None
     llm_provider: Optional[str] = None  # openai, anthropic, google
     model: Optional[str] = None
+    document_ids: Optional[List[int]] = None  # Filter search to specific documents

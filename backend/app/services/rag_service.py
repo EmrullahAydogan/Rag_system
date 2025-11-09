@@ -43,6 +43,7 @@ Answer:"""
         conversation_history: List[Dict[str, str]] = None,
         llm_provider: Optional[str] = None,
         model: Optional[str] = None,
+        document_ids: Optional[List[int]] = None,
     ) -> Tuple[str, List[Dict[str, Any]]]:
         """
         Process a chat query using RAG
@@ -52,12 +53,18 @@ Answer:"""
             conversation_history: Previous messages [{"role": "user/assistant", "content": "..."}]
             llm_provider: LLM provider to use
             model: Model name to use
+            document_ids: List of document IDs to filter search
 
         Returns:
             (answer, source_documents)
         """
+        # Build filter for document IDs
+        filter_dict = None
+        if document_ids:
+            filter_dict = {"document_id": {"$in": document_ids}}
+
         # Get relevant documents
-        relevant_docs = self.vector_store.search(query, k=4)
+        relevant_docs = self.vector_store.search(query, k=4, filter=filter_dict)
 
         # Build context from documents
         context = self._build_context(relevant_docs)

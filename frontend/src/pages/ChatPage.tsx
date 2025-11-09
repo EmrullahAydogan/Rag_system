@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap, Mic, MicOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { chatApi } from '@/api/client';
-import type { Message, ChatRequest } from '@/types';
+import { chatApi, documentsApi } from '@/api/client';
+import type { Message, ChatRequest, Document } from '@/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatRelativeTime } from '@/utils/format';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -16,6 +16,8 @@ export default function ChatPage() {
   const [useWebSocketMode, setUseWebSocketMode] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+  const [showDocSelector, setShowDocSelector] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const queryClient = useQueryClient();
@@ -67,6 +69,14 @@ export default function ChatPage() {
     enabled: !!currentConversationId,
   });
 
+  // Get available documents for filtering
+  const { data: documents = [] } = useQuery({
+    queryKey: ['documents'],
+    queryFn: () => documentsApi.list(),
+  });
+
+  const completedDocuments = documents.filter((doc) => doc.status === 'completed');
+
   const messages = conversation?.messages || [];
 
   // Send message mutation
@@ -83,11 +93,14 @@ export default function ChatPage() {
   const handleSend = () => {
     if (!input.trim()) return;
 
+    const documentIds = selectedDocuments.length > 0 ? selectedDocuments : undefined;
+
     if (useWebSocketMode && isConnected) {
       // Use WebSocket
       const success = sendWebSocketMessage({
         message: input,
         conversation_id: currentConversationId,
+        document_ids: documentIds,
       });
 
       if (success) {
@@ -100,6 +113,7 @@ export default function ChatPage() {
       sendMessageMutation.mutate({
         message: input,
         conversation_id: currentConversationId,
+        document_ids: documentIds,
       });
     }
   };
@@ -120,6 +134,22 @@ export default function ChatPage() {
     setCurrentConversationId(undefined);
     setInput('');
     queryClient.removeQueries({ queryKey: ['conversation'] });
+  };
+
+  const toggleDocument = (docId: number) => {
+    setSelectedDocuments((prev) =>
+      prev.includes(docId)
+        ? prev.filter((id) => id !== docId)
+        : [...prev, docId]
+    );
+  };
+
+  const selectAllDocuments = () => {
+    setSelectedDocuments(completedDocuments.map((doc) => doc.id));
+  };
+
+  const clearDocumentSelection = () => {
+    setSelectedDocuments([]);
   };
 
   // Quick question templates
@@ -247,6 +277,16 @@ export default function ChatPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowDocSelector(!showDocSelector)}
+            className={`btn-secondary text-xs flex items-center gap-1 ${
+              selectedDocuments.length > 0 ? 'border-primary-500 bg-primary-50' : ''
+            }`}
+            title="Filter by documents"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Docs {selectedDocuments.length > 0 && `(${selectedDocuments.length})`}
+          </button>
+          <button
             onClick={() => setUseWebSocketMode(!useWebSocketMode)}
             className="btn-secondary text-xs"
             title={`Switch to ${useWebSocketMode ? 'REST API' : 'WebSocket'} mode`}
@@ -361,6 +401,61 @@ export default function ChatPage() {
       {/* Input */}
       <div className="bg-white border-t border-gray-200 px-6 py-4">
         <div className="max-w-4xl mx-auto">
+          {/* Document Selector Panel */}
+          {showDocSelector && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-900">Filter by Documents</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllDocuments}
+                    className="text-xs text-primary-600 hover:text-primary-700"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearDocumentSelection}
+                    className="text-xs text-gray-600 hover:text-gray-700"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {completedDocuments.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                  {completedDocuments.map((doc) => (
+                    <label
+                      key={doc.id}
+                      className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                        selectedDocuments.includes(doc.id)
+                          ? 'bg-primary-50 border border-primary-200'
+                          : 'bg-white border border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedDocuments.includes(doc.id)}
+                        onChange={() => toggleDocument(doc.id)}
+                        className="rounded text-primary-600"
+                      />
+                      <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-900 truncate">{doc.filename}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No documents available. Upload documents first.</p>
+              )}
+
+              {selectedDocuments.length > 0 && (
+                <p className="text-xs text-gray-600 mt-3">
+                  {selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} selected. Chat will only use context from these documents.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Quick Templates - Always visible */}
           {messages.length > 0 && (
             <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-2">
