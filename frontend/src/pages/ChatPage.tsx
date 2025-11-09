@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap, Mic, MicOff } from 'lucide-react';
+import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap, Mic, MicOff, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatApi, documentsApi } from '@/api/client';
 import type { Message, ChatRequest, Document } from '@/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatRelativeTime } from '@/utils/format';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { exportConversationToPDF } from '@/utils/pdfExport';
 
 export default function ChatPage() {
   const [input, setInput] = useState('');
@@ -152,6 +153,12 @@ export default function ChatPage() {
     setSelectedDocuments([]);
   };
 
+  const handleExportPDF = () => {
+    if (conversation) {
+      exportConversationToPDF(conversation);
+    }
+  };
+
   // Quick question templates
   const quickTemplates = [
     "What's your return policy?",
@@ -292,6 +299,15 @@ export default function ChatPage() {
             title={`Switch to ${useWebSocketMode ? 'REST API' : 'WebSocket'} mode`}
           >
             {useWebSocketMode ? 'Live Mode' : 'Standard Mode'}
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={!conversation || messages.length === 0}
+            className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Export conversation as PDF"
+          >
+            <Download className="w-4 h-4" />
+            Export PDF
           </button>
           <button
             onClick={handleNewChat}
