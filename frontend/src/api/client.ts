@@ -113,4 +113,36 @@ export const analyticsApi = {
   },
 };
 
+// Auth API
+export const authApi = {
+  login: async (username: string, password: string): Promise<{ access_token: string; token_type: string }> => {
+    const { data } = await apiClient.post('/api/auth/login', { username, password });
+    return data;
+  },
+
+  register: async (email: string, username: string, password: string, full_name?: string): Promise<any> => {
+    const { data } = await apiClient.post('/api/auth/register', {
+      email,
+      username,
+      password,
+      full_name,
+    });
+    return data;
+  },
+
+  getCurrentUser: async (token: string): Promise<any> => {
+    const { data } = await apiClient.get('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return data;
+  },
+
+  verifyToken: async (token: string): Promise<{ valid: boolean }> => {
+    const { data } = await apiClient.get('/api/auth/verify', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return data;
+  },
+};
+
 export default apiClient;

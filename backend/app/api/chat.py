@@ -216,3 +216,72 @@ def get_llm_providers():
     """Get available LLM providers"""
     rag_service = RAGService()
     return rag_service.get_available_providers()
+
+
+@router.post("/compare")
+def compare_models(
+    request: ChatRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Compare responses from multiple LLM providers
+    Returns responses from OpenAI, Anthropic, and Google Gemini
+    """
+
+    # Get conversation history if conversation_id provided
+    conversation_history = []
+    if request.conversation_id:
+        history_messages = db.query(Message).filter(
+            Message.conversation_id == request.conversation_id
+        ).order_by(Message.timestamp).all()
+
+        conversation_history = [
+            {"role": msg.role, "content": msg.content}
+            for msg in history_messages
+        ]
+
+    rag_service = RAGService()
+
+    # Get responses from all 3 providers
+    providers = ["openai", "anthropic", "google"]
+    models = {
+        "openai": "gpt-3.5-turbo",
+        "anthropic": "claude-3-sonnet-20240229",
+        "google": "gemini-pro"
+    }
+
+    results = {}
+
+    for provider in providers:
+        try:
+            start_time = time.time()
+            answer, sources = rag_service.chat(
+                query=request.message,
+                conversation_history=conversation_history,
+                llm_provider=provider,
+                model=models[provider],
+            )
+            response_time = time.time() - start_time
+
+            results[provider] = {
+                "answer": answer,
+                "sources": sources,
+                "model": models[provider],
+                "response_time": round(response_time, 2),
+                "success": True,
+                "error": None
+            }
+        except Exception as e:
+            results[provider] = {
+                "answer": None,
+                "sources": [],
+                "model": models[provider],
+                "response_time": 0,
+                "success": False,
+                "error": str(e)
+            }
+
+    return {
+        "query": request.message,
+        "results": results
+    }

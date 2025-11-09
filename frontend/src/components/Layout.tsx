@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { MessageSquare, FileText, BarChart3, Clock } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MessageSquare, FileText, BarChart3, Clock, LogOut, User, Zap } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import ThemeToggle from './ThemeToggle';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,12 +12,20 @@ interface LayoutProps {
 const navigation = [
   { name: 'Chat', href: '/', icon: MessageSquare },
   { name: 'Documents', href: '/documents', icon: FileText },
+  { name: 'Comparison', href: '/comparison', icon: Zap },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'History', href: '/history', icon: Clock },
 ];
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -52,7 +61,31 @@ export default function Layout({ children }: LayoutProps) {
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          {isAuthenticated && user ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-gray-700 dark:text-gray-300 truncate">{user.username}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full btn-secondary text-sm flex items-center justify-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Link to="/login" className="btn-primary w-full text-sm text-center block">
+                Sign In
+              </Link>
+              <Link to="/register" className="btn-secondary w-full text-sm text-center block">
+                Sign Up
+              </Link>
+            </div>
+          )}
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-3">
             <p>Multi-LLM RAG System</p>
             <p className="mt-1">v1.0.0</p>
           </div>
