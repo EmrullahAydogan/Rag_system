@@ -5,7 +5,7 @@ import { Upload, File, Trash2, CheckCircle, XCircle, Clock, FileText, FileImage,
 import { documentsApi, tagsApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatDate, formatFileSize } from '@/utils/format';
-import type { Document } from '@/types';
+import type { Document, Tag as TagType } from '@/types';
 
 interface UploadingFile {
   file: File;
@@ -16,6 +16,9 @@ interface UploadingFile {
 
 export default function DocumentsPage() {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [showCreateTag, setShowCreateTag] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#0ea5e9');
   const queryClient = useQueryClient();
 
   const { data: documents, isLoading } = useQuery({
@@ -28,11 +31,34 @@ export default function DocumentsPage() {
     queryFn: () => documentsApi.getStats(),
   });
 
+  const { data: tags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: () => tagsApi.list(),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => documentsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['document-stats'] });
+    },
+  });
+
+  const createTagMutation = useMutation({
+    mutationFn: () => tagsApi.create(newTagName, newTagColor),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      setShowCreateTag(false);
+      setNewTagName('');
+      setNewTagColor('#0ea5e9');
+    },
+  });
+
+  const deleteTagMutation = useMutation({
+    mutationFn: (id: number) => tagsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
     },
   });
 
@@ -155,6 +181,87 @@ export default function DocumentsPage() {
           </div>
         )}
 
+        {/* Tags Management */}
+        <div className="card mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Tags</h2>
+            <button
+              onClick={() => setShowCreateTag(true)}
+              className="btn-primary text-sm flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create Tag
+            </button>
+          </div>
+
+          {/* Create Tag Form */}
+          {showCreateTag && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-medium mb-3">Create New Tag</h3>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  placeholder="Tag name"
+                  className="input flex-1"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={newTagColor}
+                    onChange={(e) => setNewTagColor(e.target.value)}
+                    className="w-12 h-10 rounded cursor-pointer"
+                  />
+                  <button
+                    onClick={() => createTagMutation.mutate()}
+                    disabled={!newTagName.trim() || createTagMutation.isPending}
+                    className="btn-primary"
+                  >
+                    Create
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCreateTag(false);
+                      setNewTagName('');
+                      setNewTagColor('#0ea5e9');
+                    }}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tags List */}
+          {tags.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <div
+                  key={tag.id}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm"
+                  style={{ backgroundColor: tag.color + '20', color: tag.color }}
+                >
+                  <Tag className="w-3 h-3" />
+                  <span className="font-medium">{tag.name}</span>
+                  <span className="text-xs opacity-70">({tag.document_count || 0})</span>
+                  <button
+                    onClick={() => deleteTagMutation.mutate(tag.id)}
+                    className="ml-1 hover:opacity-70"
+                    title="Delete tag"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No tags created yet. Create your first tag to organize documents.</p>
+          )}
+        </div>
+
         {/* Upload area */}
         <div className="card mb-8">
           <div
@@ -209,6 +316,7 @@ export default function DocumentsPage() {
                   key={doc.id}
                   document={doc}
                   onDelete={() => deleteMutation.mutate(doc.id)}
+                  availableTags={tags}
                 />
               ))}
             </div>
@@ -323,7 +431,37 @@ function UploadingFileItem({
   );
 }
 
-function DocumentItem({ document, onDelete }: { document: Document; onDelete: () => void }) {
+function DocumentItem({
+  document,
+  onDelete,
+  availableTags
+}: {
+  document: Document;
+  onDelete: () => void;
+  availableTags: TagType[];
+}) {
+  const queryClient = useQueryClient();
+  const [showTagMenu, setShowTagMenu] = useState(false);
+
+  const addTagMutation = useMutation({
+    mutationFn: (tagId: number) => tagsApi.addToDocument(document.id, tagId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    },
+  });
+
+  const removeTagMutation = useMutation({
+    mutationFn: (tagId: number) => tagsApi.removeFromDocument(document.id, tagId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    },
+  });
+
+  const documentTagIds = document.tags?.map((t) => t.id) || [];
+  const availableTagsToAdd = availableTags.filter((t) => !documentTagIds.includes(t.id));
+
   const statusIcons = {
     pending: <Clock className="w-5 h-5 text-yellow-500" />,
     processing: <Clock className="w-5 h-5 text-blue-500 animate-spin" />,
@@ -355,6 +493,29 @@ function DocumentItem({ document, onDelete }: { document: Document; onDelete: ()
           {document.error_message && (
             <p className="text-sm text-red-600 mt-1">{document.error_message}</p>
           )}
+
+          {/* Document Tags */}
+          {document.tags && document.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {document.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                  style={{ backgroundColor: tag.color + '20', color: tag.color }}
+                >
+                  <Tag className="w-2.5 h-2.5" />
+                  {tag.name}
+                  <button
+                    onClick={() => removeTagMutation.mutate(tag.id)}
+                    className="ml-0.5 hover:opacity-70"
+                    title="Remove tag"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -364,6 +525,41 @@ function DocumentItem({ document, onDelete }: { document: Document; onDelete: ()
           <span className={`text-xs px-2 py-1 rounded ${statusColors[document.status]}`}>
             {document.status}
           </span>
+        </div>
+
+        {/* Add Tag Button */}
+        <div className="relative">
+          <button
+            onClick={() => setShowTagMenu(!showTagMenu)}
+            className="p-2 text-primary-600 hover:bg-primary-50 rounded transition-colors"
+            title="Add tag"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+
+          {/* Tag Dropdown */}
+          {showTagMenu && availableTagsToAdd.length > 0 && (
+            <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="p-2 max-h-48 overflow-y-auto">
+                {availableTagsToAdd.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => {
+                      addTagMutation.mutate(tag.id);
+                      setShowTagMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <Tag
+                      className="w-3 h-3"
+                      style={{ color: tag.color }}
+                    />
+                    <span className="text-sm">{tag.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <button

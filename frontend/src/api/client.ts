@@ -9,6 +9,7 @@ import type {
   TimeSeriesData,
   TopicData,
   LLMProvider,
+  Tag,
 } from '@/types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -150,12 +151,12 @@ export const analyticsApi = {
 
 // Tags API
 export const tagsApi = {
-  list: async (): Promise<any[]> => {
+  list: async (): Promise<Tag[]> => {
     const { data } = await apiClient.get('/api/tags/');
     return data;
   },
 
-  create: async (name: string, color: string = '#0ea5e9'): Promise<any> => {
+  create: async (name: string, color: string = '#0ea5e9'): Promise<Tag> => {
     const { data } = await apiClient.post('/api/tags/', { name, color });
     return data;
   },

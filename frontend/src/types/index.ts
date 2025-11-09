@@ -1,3 +1,10 @@
+export interface Tag {
+  id: number;
+  name: string;
+  color: string;
+  document_count?: number;
+}
+
 export interface Document {
   id: number;
   filename: string;
@@ -9,6 +16,7 @@ export interface Document {
   upload_date: string;
   processed_date?: string;
   error_message?: string;
+  tags?: Tag[];
 }
 
 export interface Message {
