@@ -3,6 +3,7 @@ from .conversation import Conversation, Message, MessageFeedback
 from .analytics import AnalyticsEvent
 from .user import User
 from .tag import Tag, document_tags
+from .activity_log import ActivityLog
 
 __all__ = [
     "Document",
@@ -14,4 +15,5 @@ __all__ = [
     "User",
     "Tag",
     "document_tags",
+    "ActivityLog",
 ]

@@ -6,6 +6,7 @@ import { documentsApi, tagsApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatDate, formatFileSize } from '@/utils/format';
 import type { Document, Tag as TagType } from '@/types';
+import { useToast } from '@/contexts/ToastContext';
 
 interface UploadingFile {
   file: File;
@@ -15,6 +16,7 @@ interface UploadingFile {
 }
 
 export default function DocumentsPage() {
+  const toast = useToast();
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [showCreateTag, setShowCreateTag] = useState(false);
   const [newTagName, setNewTagName] = useState('');
@@ -41,6 +43,10 @@ export default function DocumentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['document-stats'] });
+      toast.success('Document deleted', 'Document was successfully removed');
+    },
+    onError: () => {
+      toast.error('Delete failed', 'Failed to delete document');
     },
   });
 
@@ -51,6 +57,10 @@ export default function DocumentsPage() {
       setShowCreateTag(false);
       setNewTagName('');
       setNewTagColor('#0ea5e9');
+      toast.success('Tag created', `Tag "${newTagName}" created successfully`);
+    },
+    onError: () => {
+      toast.error('Failed to create tag', 'Please try again');
     },
   });
 
@@ -59,6 +69,10 @@ export default function DocumentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      toast.success('Tag deleted', 'Tag removed successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete tag', 'Please try again');
     },
   });
 

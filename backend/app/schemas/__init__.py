@@ -23,6 +23,11 @@ from .analytics import (
     TimeSeriesData,
     TopicData,
 )
+from .activity_log import (
+    ActivityLogBase,
+    ActivityLogCreate,
+    ActivityLogResponse,
+)
 
 __all__ = [
     "DocumentBase",
@@ -44,4 +49,7 @@ __all__ = [
     "AnalyticsSummary",
     "TimeSeriesData",
     "TopicData",
+    "ActivityLogBase",
+    "ActivityLogCreate",
+    "ActivityLogResponse",
 ]

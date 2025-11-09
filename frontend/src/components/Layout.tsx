@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MessageSquare, FileText, BarChart3, Clock, LogOut, User, Zap } from 'lucide-react';
+import { MessageSquare, FileText, BarChart3, Clock, LogOut, User, Zap, Activity } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Comparison', href: '/comparison', icon: Zap },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Activity Logs', href: '/logs', icon: Activity },
   { name: 'History', href: '/history', icon: Clock },
 ];
 

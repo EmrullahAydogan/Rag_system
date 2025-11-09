@@ -8,8 +8,10 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatRelativeTime } from '@/utils/format';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { exportConversationToPDF } from '@/utils/pdfExport';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function ChatPage() {
+  const toast = useToast();
   const [input, setInput] = useState('');
   const [currentConversationId, setCurrentConversationId] = useState<number | undefined>();
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -88,6 +90,10 @@ export default function ChatPage() {
       queryClient.invalidateQueries({ queryKey: ['conversation', data.conversation_id] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       setInput('');
+      toast.success('Message sent', 'Your message was sent successfully');
+    },
+    onError: (error: any) => {
+      toast.error('Failed to send message', error.message || 'Please try again');
     },
   });
 
@@ -155,7 +161,12 @@ export default function ChatPage() {
 
   const handleExportPDF = () => {
     if (conversation) {
-      exportConversationToPDF(conversation);
+      try {
+        exportConversationToPDF(conversation);
+        toast.success('PDF Exported', 'Conversation exported successfully');
+      } catch (error) {
+        toast.error('Export Failed', 'Failed to export PDF');
+      }
     }
   };
 

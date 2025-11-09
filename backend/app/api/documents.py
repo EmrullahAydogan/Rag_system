@@ -14,6 +14,7 @@ from app.schemas import DocumentResponse, DocumentUpdate
 from app.models import Document, DocumentStatus
 from app.services.document_processor import DocumentProcessor
 from app.services.vector_store import get_vector_store
+from app.utils.activity_logger import log_activity
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 

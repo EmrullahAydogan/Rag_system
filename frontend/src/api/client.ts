@@ -174,6 +174,26 @@ export const tagsApi = {
   },
 };
 
+// Activity Logs API
+export const logsApi = {
+  list: async (params?: {
+    skip?: number;
+    limit?: number;
+    action_type?: string;
+    resource_type?: string;
+    status?: string;
+    days?: number;
+  }): Promise<any[]> => {
+    const { data } = await apiClient.get('/api/logs/', { params });
+    return data;
+  },
+
+  getStats: async (days: number = 7): Promise<any> => {
+    const { data} = await apiClient.get('/api/logs/stats', { params: { days } });
+    return data;
+  },
+};
+
 // Auth API
 export const authApi = {
   login: async (username: string, password: string): Promise<{ access_token: string; token_type: string }> => {
