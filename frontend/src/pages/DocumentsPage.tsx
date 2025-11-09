@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Upload, File, Trash2, CheckCircle, XCircle, Clock, FileText, FileImage, FileCode, X } from 'lucide-react';
 import { documentsApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatDate, formatFileSize } from '@/utils/format';
 import type { Document } from '@/types';
 
+interface UploadingFile {
+  file: File;
+  progress: number;
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  error?: string;
+}
+
 export default function DocumentsPage() {
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const queryClient = useQueryClient();
 
   const { data: documents, isLoading } = useQuery({
@@ -20,14 +28,6 @@ export default function DocumentsPage() {
     queryFn: () => documentsApi.getStats(),
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => documentsApi.upload(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      queryClient.invalidateQueries({ queryKey: ['document-stats'] });
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (id: number) => documentsApi.delete(id),
     onSuccess: () => {
@@ -36,10 +36,81 @@ export default function DocumentsPage() {
     },
   });
 
+  const uploadFile = async (file: File) => {
+    // Add to uploading files
+    const uploadingFile: UploadingFile = {
+      file,
+      progress: 0,
+      status: 'uploading',
+    };
+
+    setUploadingFiles((prev) => [...prev, uploadingFile]);
+
+    try {
+      // Simulate progress (in real implementation, use XHR with progress events)
+      const progressInterval = setInterval(() => {
+        setUploadingFiles((prev) =>
+          prev.map((f) =>
+            f.file === file && f.progress < 90
+              ? { ...f, progress: f.progress + 10 }
+              : f
+          )
+        );
+      }, 200);
+
+      // Upload file
+      await documentsApi.upload(file);
+
+      clearInterval(progressInterval);
+
+      // Set to processing
+      setUploadingFiles((prev) =>
+        prev.map((f) =>
+          f.file === file
+            ? { ...f, progress: 100, status: 'processing' }
+            : f
+        )
+      );
+
+      // Wait a bit for processing simulation
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Set to completed
+      setUploadingFiles((prev) =>
+        prev.map((f) =>
+          f.file === file
+            ? { ...f, status: 'completed' }
+            : f
+        )
+      );
+
+      // Remove from uploading files after 2 seconds
+      setTimeout(() => {
+        setUploadingFiles((prev) => prev.filter((f) => f.file !== file));
+      }, 2000);
+
+      // Refresh documents list
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['document-stats'] });
+    } catch (error: any) {
+      setUploadingFiles((prev) =>
+        prev.map((f) =>
+          f.file === file
+            ? { ...f, status: 'error', error: error.message || 'Upload failed' }
+            : f
+        )
+      );
+    }
+  };
+
   const onDrop = (acceptedFiles: File[]) => {
     acceptedFiles.forEach((file) => {
-      uploadMutation.mutate(file);
+      uploadFile(file);
     });
+  };
+
+  const removeUploadingFile = (file: File) => {
+    setUploadingFiles((prev) => prev.filter((f) => f.file !== file));
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -110,10 +181,17 @@ export default function DocumentsPage() {
             )}
           </div>
 
-          {uploadMutation.isPending && (
-            <div className="mt-4">
-              <LoadingSpinner size="sm" />
-              <p className="text-sm text-gray-600 text-center mt-2">Uploading and processing...</p>
+          {/* Uploading files */}
+          {uploadingFiles.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <h3 className="text-sm font-medium text-gray-700">Uploading files</h3>
+              {uploadingFiles.map((uploadingFile, index) => (
+                <UploadingFileItem
+                  key={index}
+                  uploadingFile={uploadingFile}
+                  onRemove={() => removeUploadingFile(uploadingFile.file)}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -142,6 +220,105 @@ export default function DocumentsPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function UploadingFileItem({
+  uploadingFile,
+  onRemove
+}: {
+  uploadingFile: UploadingFile;
+  onRemove: () => void;
+}) {
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return <FileText className="w-6 h-6 text-red-500" />;
+      case 'txt':
+      case 'md':
+        return <FileText className="w-6 h-6 text-blue-500" />;
+      case 'docx':
+        return <FileText className="w-6 h-6 text-blue-600" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return <FileImage className="w-6 h-6 text-purple-500" />;
+      default:
+        return <FileCode className="w-6 h-6 text-gray-500" />;
+    }
+  };
+
+  const statusText = {
+    uploading: `Uploading... ${uploadingFile.progress}%`,
+    processing: 'Processing...',
+    completed: 'Completed!',
+    error: 'Failed',
+  };
+
+  const statusColor = {
+    uploading: 'text-blue-600',
+    processing: 'text-yellow-600',
+    completed: 'text-green-600',
+    error: 'text-red-600',
+  };
+
+  return (
+    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="flex-shrink-0">
+        {getFileIcon(uploadingFile.file.name)}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <p className="font-medium text-sm text-gray-900 truncate">
+            {uploadingFile.file.name}
+          </p>
+          <span className={`text-xs font-medium ${statusColor[uploadingFile.status]}`}>
+            {statusText[uploadingFile.status]}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+          <span>{formatFileSize(uploadingFile.file.size)}</span>
+        </div>
+
+        {/* Progress bar */}
+        {(uploadingFile.status === 'uploading' || uploadingFile.status === 'processing') && (
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                uploadingFile.status === 'processing'
+                  ? 'bg-yellow-500 animate-pulse'
+                  : 'bg-blue-500'
+              }`}
+              style={{ width: `${uploadingFile.progress}%` }}
+            />
+          </div>
+        )}
+
+        {uploadingFile.status === 'completed' && (
+          <div className="flex items-center gap-1 text-green-600">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-xs">Upload successful</span>
+          </div>
+        )}
+
+        {uploadingFile.status === 'error' && uploadingFile.error && (
+          <p className="text-xs text-red-600">{uploadingFile.error}</p>
+        )}
+      </div>
+
+      {uploadingFile.status === 'error' && (
+        <button
+          onClick={onRemove}
+          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          title="Remove"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }

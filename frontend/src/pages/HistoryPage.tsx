@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Trash2, ExternalLink, Download } from 'lucide-react';
+import { MessageSquare, Trash2, ExternalLink, Download, Search, X, Calendar, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { chatApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -11,11 +11,65 @@ export default function HistoryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'messages'>('recent');
 
   const { data: conversations, isLoading } = useQuery({
     queryKey: ['conversations'],
     queryFn: () => chatApi.listConversations(),
   });
+
+  // Filter and sort conversations
+  const filteredConversations = useMemo(() => {
+    if (!conversations) return [];
+
+    let filtered = [...conversations];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(conv =>
+        conv.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply date filter
+    const now = new Date();
+    if (dateFilter !== 'all') {
+      filtered = filtered.filter(conv => {
+        const convDate = new Date(conv.updated_at);
+        const diffTime = Math.abs(now.getTime() - convDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        switch (dateFilter) {
+          case 'today':
+            return diffDays === 0;
+          case 'week':
+            return diffDays <= 7;
+          case 'month':
+            return diffDays <= 30;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'recent':
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        case 'oldest':
+          return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+        case 'messages':
+          return b.message_count - a.message_count;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [conversations, searchQuery, dateFilter, sortBy]);
 
   const { data: conversationDetail } = useQuery({
     queryKey: ['conversation', selectedConversation],
@@ -44,16 +98,66 @@ export default function HistoryPage() {
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">Chat History</h1>
           <p className="text-sm text-gray-600 mt-1">
-            {conversations?.length || 0} conversations
+            {filteredConversations.length} of {conversations?.length || 0} conversations
           </p>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="p-4 border-b border-gray-200 space-y-3">
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="all">All time</option>
+                <option value="today">Today</option>
+                <option value="week">This week</option>
+                <option value="month">This month</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="recent">Most recent</option>
+                <option value="oldest">Oldest first</option>
+                <option value="messages">Most messages</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <LoadingSpinner />
-          ) : conversations && conversations.length > 0 ? (
+          ) : filteredConversations.length > 0 ? (
             <div className="divide-y divide-gray-200">
-              {conversations.map((conv) => (
+              {filteredConversations.map((conv) => (
                 <button
                   key={conv.id}
                   onClick={() => setSelectedConversation(conv.id)}

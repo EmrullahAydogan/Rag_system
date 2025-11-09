@@ -1,23 +1,53 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { MessageSquare, FileText, TrendingUp, Star } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
+import { MessageSquare, FileText, TrendingUp, Star, Clock, Zap, Users } from 'lucide-react';
 import { analyticsApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
+const COLORS = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+
 export default function AnalyticsPage() {
+  const [timeRange, setTimeRange] = useState(7);
+
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: ['analytics-summary'],
     queryFn: () => analyticsApi.getSummary(),
   });
 
   const { data: timeSeries, isLoading: timeSeriesLoading } = useQuery({
-    queryKey: ['analytics-time-series'],
-    queryFn: () => analyticsApi.getTimeSeries(7),
+    queryKey: ['analytics-time-series', timeRange],
+    queryFn: () => analyticsApi.getTimeSeries(timeRange),
   });
 
   const { data: topTopics, isLoading: topicsLoading } = useQuery({
     queryKey: ['analytics-topics'],
     queryFn: () => analyticsApi.getTopTopics(10),
+  });
+
+  const { data: responseTimes } = useQuery({
+    queryKey: ['analytics-response-times', timeRange],
+    queryFn: () => analyticsApi.getResponseTimes(timeRange),
+  });
+
+  const { data: modelPerformance } = useQuery({
+    queryKey: ['analytics-model-performance'],
+    queryFn: () => analyticsApi.getModelPerformance(30),
+  });
+
+  const { data: userEngagement } = useQuery({
+    queryKey: ['analytics-user-engagement'],
+    queryFn: () => analyticsApi.getUserEngagement(30),
+  });
+
+  const { data: peakHours } = useQuery({
+    queryKey: ['analytics-peak-hours', timeRange],
+    queryFn: () => analyticsApi.getPeakHours(timeRange),
+  });
+
+  const { data: conversationMetrics } = useQuery({
+    queryKey: ['analytics-conversation-metrics'],
+    queryFn: () => analyticsApi.getConversationMetrics(30),
   });
 
   if (summaryLoading) {
@@ -27,9 +57,24 @@ export default function AnalyticsPage() {
   return (
     <div className="h-screen overflow-auto bg-gray-50">
       <div className="p-8 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-2">Monitor performance and usage metrics</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-600 mt-2">Monitor performance and usage metrics</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Time Range:</span>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(Number(e.target.value))}
+              className="input text-sm py-2"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={14}>Last 14 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -137,6 +182,161 @@ export default function AnalyticsPage() {
             )}
           </div>
         </div>
+
+        {/* User Engagement & Conversation Metrics */}
+        {(userEngagement || conversationMetrics) && (
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            {userEngagement && (
+              <>
+                <div className="card">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-5 h-5 text-blue-500" />
+                    <p className="text-sm text-gray-600">Active Days</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {userEngagement.active_days} / {userEngagement.period_days}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {((userEngagement.active_days / userEngagement.period_days) * 100).toFixed(0)}% active
+                  </p>
+                </div>
+                <div className="card">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-5 h-5 text-green-500" />
+                    <p className="text-sm text-gray-600">Avg Conversations/Day</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {userEngagement.avg_conversations_per_day.toFixed(1)}
+                  </p>
+                </div>
+              </>
+            )}
+            {conversationMetrics && (
+              <div className="card">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-5 h-5 text-purple-500" />
+                  <p className="text-sm text-gray-600">Avg Conversation Length</p>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {conversationMetrics.avg_conversation_length.toFixed(1)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {conversationMetrics.median_conversation_length} median
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Response Times & Model Performance */}
+        <div className="grid grid-cols-2 gap-6 mb-8">
+          {/* Response Times */}
+          <div className="card">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-500" />
+              Response Times Over Time
+            </h2>
+            {responseTimes && responseTimes.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={responseTimes}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" fontSize={12} />
+                  <YAxis fontSize={12} label={{ value: 'Seconds', angle: -90, position: 'insideLeft' }} />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="avg_response_time"
+                    stroke="#0ea5e9"
+                    strokeWidth={2}
+                    name="Average"
+                    dot={{ fill: '#0ea5e9' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="min_response_time"
+                    stroke="#10b981"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    name="Min"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="max_response_time"
+                    stroke="#ef4444"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    name="Max"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-gray-500 py-12">No response time data available</p>
+            )}
+          </div>
+
+          {/* Model Performance */}
+          <div className="card">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-500" />
+              Model Performance
+            </h2>
+            {modelPerformance && modelPerformance.length > 0 ? (
+              <div className="space-y-4">
+                {modelPerformance.map((model: any, index: number) => (
+                  <div key={index} className="border-b border-gray-200 pb-3 last:border-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-gray-900 capitalize">
+                        {model.provider}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {model.usage_count} uses
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
+                          style={{
+                            width: `${Math.min((model.avg_response_time / 10) * 100, 100)}%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 min-w-[60px] text-right">
+                        {model.avg_response_time.toFixed(2)}s
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-12">No model performance data available</p>
+            )}
+          </div>
+        </div>
+
+        {/* Peak Hours */}
+        {peakHours && peakHours.length > 0 && (
+          <div className="card mb-8">
+            <h2 className="text-xl font-semibold mb-4">Peak Usage Hours</h2>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={peakHours}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="hour"
+                  fontSize={12}
+                  tickFormatter={(hour) => `${hour}:00`}
+                />
+                <YAxis fontSize={12} />
+                <Tooltip
+                  labelFormatter={(hour) => `${hour}:00 - ${hour + 1}:00`}
+                  formatter={(value) => [value, 'Messages']}
+                />
+                <Bar dataKey="message_count" fill="#8b5cf6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -40,3 +40,48 @@ def get_top_topics(
 def get_document_usage(db: Session = Depends(get_db)):
     """Get document usage statistics"""
     return AnalyticsService.get_document_usage(db)
+
+
+@router.get("/response-times")
+def get_response_times(
+    days: int = Query(default=7, ge=1, le=90),
+    db: Session = Depends(get_db)
+):
+    """Get response times over time"""
+    return AnalyticsService.get_response_times(db, days=days)
+
+
+@router.get("/model-performance")
+def get_model_performance(
+    days: int = Query(default=30, ge=1, le=90),
+    db: Session = Depends(get_db)
+):
+    """Get performance metrics for each LLM model"""
+    return AnalyticsService.get_model_performance(db, days=days)
+
+
+@router.get("/user-engagement")
+def get_user_engagement(
+    days: int = Query(default=30, ge=1, le=90),
+    db: Session = Depends(get_db)
+):
+    """Get user engagement metrics"""
+    return AnalyticsService.get_user_engagement(db, days=days)
+
+
+@router.get("/peak-hours")
+def get_peak_hours(
+    days: int = Query(default=7, ge=1, le=90),
+    db: Session = Depends(get_db)
+):
+    """Get peak usage hours"""
+    return AnalyticsService.get_peak_hours(db, days=days)
+
+
+@router.get("/conversation-metrics")
+def get_conversation_metrics(
+    days: int = Query(default=30, ge=1, le=90),
+    db: Session = Depends(get_db)
+):
+    """Get conversation length and quality metrics"""
+    return AnalyticsService.get_conversation_metrics(db, days=days)

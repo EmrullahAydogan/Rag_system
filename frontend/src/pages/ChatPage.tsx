@@ -1,17 +1,61 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Bot, User, FileText } from 'lucide-react';
+import { Send, Bot, User, FileText, Wifi, WifiOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatApi } from '@/api/client';
 import type { Message, ChatRequest } from '@/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatRelativeTime } from '@/utils/format';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 export default function ChatPage() {
   const [input, setInput] = useState('');
   const [currentConversationId, setCurrentConversationId] = useState<number | undefined>();
+  const [streamingMessage, setStreamingMessage] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [useWebSocketMode, setUseWebSocketMode] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // WebSocket connection
+  const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/api/chat/ws';
+  const { isConnected, isTyping, sendMessage: sendWebSocketMessage } = useWebSocket(WS_URL, {
+    onMessage: (message) => {
+      switch (message.type) {
+        case 'conversation':
+          if (message.conversation_id) {
+            setCurrentConversationId(message.conversation_id);
+          }
+          break;
+        case 'assistant_start':
+          setIsStreaming(true);
+          setStreamingMessage('');
+          break;
+        case 'chunk':
+          if (message.content) {
+            setStreamingMessage((prev) => prev + message.content);
+          }
+          break;
+        case 'complete':
+          setIsStreaming(false);
+          setStreamingMessage('');
+          // Refresh conversation data
+          if (currentConversationId) {
+            queryClient.invalidateQueries({ queryKey: ['conversation', currentConversationId] });
+          }
+          queryClient.invalidateQueries({ queryKey: ['conversations'] });
+          break;
+        case 'error':
+          console.error('WebSocket error:', message.error);
+          setIsStreaming(false);
+          setStreamingMessage('');
+          break;
+      }
+    },
+    onError: (error) => {
+      console.error('WebSocket connection error:', error);
+    },
+  });
 
   // Get conversation if exists
   const { data: conversation } = useQuery({
@@ -36,10 +80,25 @@ export default function ChatPage() {
   const handleSend = () => {
     if (!input.trim()) return;
 
-    sendMessageMutation.mutate({
-      message: input,
-      conversation_id: currentConversationId,
-    });
+    if (useWebSocketMode && isConnected) {
+      // Use WebSocket
+      const success = sendWebSocketMessage({
+        message: input,
+        conversation_id: currentConversationId,
+      });
+
+      if (success) {
+        setInput('');
+      } else {
+        console.error('Failed to send WebSocket message');
+      }
+    } else {
+      // Fallback to REST API
+      sendMessageMutation.mutate({
+        message: input,
+        conversation_id: currentConversationId,
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -52,7 +111,7 @@ export default function ChatPage() {
   // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, streamingMessage, isTyping]);
 
   const handleNewChat = () => {
     setCurrentConversationId(undefined);
@@ -65,17 +124,41 @@ export default function ChatPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
             {conversation?.title || 'New Chat'}
+            {useWebSocketMode && (
+              <span className="inline-flex items-center gap-1 text-xs font-normal">
+                {isConnected ? (
+                  <>
+                    <Wifi className="w-3 h-3 text-green-500" />
+                    <span className="text-green-600">Live</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3 h-3 text-gray-400" />
+                    <span className="text-gray-500">Offline</span>
+                  </>
+                )}
+              </span>
+            )}
           </h2>
           <p className="text-sm text-gray-500">Ask anything about our products and services</p>
         </div>
-        <button
-          onClick={handleNewChat}
-          className="btn-secondary text-sm"
-        >
-          New Chat
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setUseWebSocketMode(!useWebSocketMode)}
+            className="btn-secondary text-xs"
+            title={`Switch to ${useWebSocketMode ? 'REST API' : 'WebSocket'} mode`}
+          >
+            {useWebSocketMode ? 'Live Mode' : 'Standard Mode'}
+          </button>
+          <button
+            onClick={handleNewChat}
+            className="btn-secondary text-sm"
+          >
+            New Chat
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -101,7 +184,46 @@ export default function ChatPage() {
             <MessageBubble key={message.id} message={message} />
           ))}
 
-          {sendMessageMutation.isPending && (
+          {/* Typing indicator */}
+          {isTyping && !isStreaming && (
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                <Bot className="w-6 h-6 text-primary-600" />
+              </div>
+              <div className="flex-1">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 inline-block">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Streaming message */}
+          {isStreaming && streamingMessage && (
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                <Bot className="w-6 h-6 text-primary-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-sm">AI Assistant</span>
+                  <span className="text-xs text-green-600">Typing...</span>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="prose prose-sm max-w-none">
+                    <ReactMarkdown>{streamingMessage}</ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading for REST API */}
+          {sendMessageMutation.isPending && !useWebSocketMode && (
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
                 <Bot className="w-6 h-6 text-primary-600" />
@@ -127,11 +249,11 @@ export default function ChatPage() {
               placeholder="Type your message here..."
               className="flex-1 input resize-none"
               rows={3}
-              disabled={sendMessageMutation.isPending}
+              disabled={sendMessageMutation.isPending || isStreaming || isTyping}
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim() || sendMessageMutation.isPending}
+              disabled={!input.trim() || sendMessageMutation.isPending || isStreaming || isTyping}
               className="btn-primary h-fit self-end"
             >
               <Send className="w-5 h-5" />

@@ -111,6 +111,66 @@ export const analyticsApi = {
     const { data } = await apiClient.get('/api/analytics/document-usage');
     return data;
   },
+
+  getResponseTimes: async (days: number = 7): Promise<any> => {
+    const { data } = await apiClient.get('/api/analytics/response-times', {
+      params: { days },
+    });
+    return data;
+  },
+
+  getModelPerformance: async (days: number = 30): Promise<any> => {
+    const { data } = await apiClient.get('/api/analytics/model-performance', {
+      params: { days },
+    });
+    return data;
+  },
+
+  getUserEngagement: async (days: number = 30): Promise<any> => {
+    const { data } = await apiClient.get('/api/analytics/user-engagement', {
+      params: { days },
+    });
+    return data;
+  },
+
+  getPeakHours: async (days: number = 7): Promise<any> => {
+    const { data } = await apiClient.get('/api/analytics/peak-hours', {
+      params: { days },
+    });
+    return data;
+  },
+
+  getConversationMetrics: async (days: number = 30): Promise<any> => {
+    const { data } = await apiClient.get('/api/analytics/conversation-metrics', {
+      params: { days },
+    });
+    return data;
+  },
+};
+
+// Tags API
+export const tagsApi = {
+  list: async (): Promise<any[]> => {
+    const { data } = await apiClient.get('/api/tags/');
+    return data;
+  },
+
+  create: async (name: string, color: string = '#0ea5e9'): Promise<any> => {
+    const { data } = await apiClient.post('/api/tags/', { name, color });
+    return data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/tags/${id}`);
+  },
+
+  addToDocument: async (documentId: number, tagId: number): Promise<void> => {
+    await apiClient.post(`/api/tags/documents/${documentId}/tags/${tagId}`);
+  },
+
+  removeFromDocument: async (documentId: number, tagId: number): Promise<void> => {
+    await apiClient.delete(`/api/tags/documents/${documentId}/tags/${tagId}`);
+  },
 };
 
 // Auth API

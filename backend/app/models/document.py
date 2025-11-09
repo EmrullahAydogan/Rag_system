@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, Enum
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
 
@@ -33,6 +34,10 @@ class Document(Base):
     processed_date = Column(DateTime(timezone=True), nullable=True)
 
     error_message = Column(Text, nullable=True)
+
+    # Import here to avoid circular imports
+    from app.models.tag import document_tags
+    tags = relationship("Tag", secondary=document_tags, back_populates="documents")
 
     def __repr__(self):
         return f"<Document {self.filename}>"
