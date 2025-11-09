@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
-import { MessageSquare, FileText, TrendingUp, Star, Clock, Zap, Users } from 'lucide-react';
+import { MessageSquare, FileText, TrendingUp, Star, Clock, Zap, Users, Activity } from 'lucide-react';
 import { analyticsApi } from '@/api/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -9,20 +9,25 @@ const COLORS = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState(7);
+  const [isRealTime, setIsRealTime] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: ['analytics-summary'],
     queryFn: () => analyticsApi.getSummary(),
+    refetchInterval: isRealTime ? 10000 : false, // Refresh every 10 seconds in real-time mode
   });
 
   const { data: timeSeries, isLoading: timeSeriesLoading } = useQuery({
     queryKey: ['analytics-time-series', timeRange],
     queryFn: () => analyticsApi.getTimeSeries(timeRange),
+    refetchInterval: isRealTime ? 10000 : false,
   });
 
   const { data: topTopics, isLoading: topicsLoading } = useQuery({
     queryKey: ['analytics-topics'],
     queryFn: () => analyticsApi.getTopTopics(10),
+    refetchInterval: isRealTime ? 10000 : false,
   });
 
   const { data: responseTimes } = useQuery({
@@ -50,6 +55,22 @@ export default function AnalyticsPage() {
     queryFn: () => analyticsApi.getConversationMetrics(30),
   });
 
+  // Update last updated timestamp when data changes
+  useEffect(() => {
+    if (summary) {
+      setLastUpdated(new Date());
+    }
+  }, [summary, timeSeries, topTopics]);
+
+  const formatLastUpdated = () => {
+    const seconds = Math.floor((new Date().getTime() - lastUpdated.getTime()) / 1000);
+    if (seconds < 5) return 'Just now';
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    return lastUpdated.toLocaleTimeString();
+  };
+
   if (summaryLoading) {
     return <LoadingSpinner />;
   }
@@ -59,21 +80,43 @@ export default function AnalyticsPage() {
       <div className="p-8 max-w-7xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-gray-600 mt-2">Monitor performance and usage metrics</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              Analytics Dashboard
+              {isRealTime && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-normal px-2.5 py-1 bg-green-100 text-green-700 rounded-full">
+                  <Activity className="w-3 h-3 animate-pulse" />
+                  Live
+                </span>
+              )}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Monitor performance and usage metrics • Last updated: {formatLastUpdated()}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Time Range:</span>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(Number(e.target.value))}
-              className="input text-sm py-2"
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsRealTime(!isRealTime)}
+              className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                isRealTime
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
-              <option value={7}>Last 7 days</option>
-              <option value={14}>Last 14 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
+              {isRealTime ? 'Real-Time ON' : 'Real-Time OFF'}
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Time Range:</span>
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(Number(e.target.value))}
+                className="input text-sm py-2"
+              >
+                <option value={7}>Last 7 days</option>
+                <option value={14}>Last 14 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
+            </div>
           </div>
         </div>
 
