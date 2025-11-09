@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap } from 'lucide-react';
+import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap, Mic, MicOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatApi } from '@/api/client';
 import type { Message, ChatRequest } from '@/types';
@@ -14,7 +14,10 @@ export default function ChatPage() {
   const [streamingMessage, setStreamingMessage] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [useWebSocketMode, setUseWebSocketMode] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const queryClient = useQueryClient();
 
   // WebSocket connection
@@ -131,6 +134,90 @@ export default function ChatPage() {
 
   const handleTemplateClick = (template: string) => {
     setInput(template);
+  };
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+          setIsListening(true);
+        };
+
+        recognition.onresult = (event: any) => {
+          let finalTranscript = '';
+          let interimTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          if (finalTranscript) {
+            setInput((prev) => prev + finalTranscript);
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          setIsRecording(false);
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+          if (isRecording) {
+            // Restart if still recording
+            try {
+              recognition.start();
+            } catch (error) {
+              console.error('Error restarting recognition:', error);
+              setIsRecording(false);
+            }
+          }
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [isRecording]);
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+      return;
+    }
+
+    if (isRecording) {
+      // Stop recording
+      recognitionRef.current.stop();
+      setIsRecording(false);
+      setIsListening(false);
+    } else {
+      // Start recording
+      try {
+        recognitionRef.current.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Error starting recognition:', error);
+      }
+    }
   };
 
   return (
@@ -293,16 +380,31 @@ export default function ChatPage() {
             </div>
           )}
 
-          <div className="flex gap-4">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Type your message here..."
-              className="flex-1 input resize-none"
-              rows={3}
-              disabled={sendMessageMutation.isPending || isStreaming || isTyping}
-            />
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder={isListening ? "Listening..." : "Type your message here..."}
+                className="w-full input resize-none pr-12"
+                rows={3}
+                disabled={sendMessageMutation.isPending || isStreaming || isTyping}
+              />
+              {/* Voice input button inside textarea */}
+              <button
+                onClick={toggleVoiceInput}
+                disabled={sendMessageMutation.isPending || isStreaming || isTyping}
+                className={`absolute right-3 bottom-3 p-2 rounded-full transition-all ${
+                  isRecording
+                    ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title={isRecording ? 'Stop recording' : 'Start voice input'}
+              >
+                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            </div>
             <button
               onClick={handleSend}
               disabled={!input.trim() || sendMessageMutation.isPending || isStreaming || isTyping}
