@@ -24,30 +24,55 @@ A production-ready, full-stack **Retrieval-Augmented Generation (RAG)** customer
 
 ## ✨ Features
 
-### Core Functionality
-- 🤖 **Multi-LLM Support**: Choose between OpenAI GPT, Anthropic Claude, or Google Gemini
-- 📚 **RAG Pipeline**: Semantic search with context-aware responses
-- 💬 **Real-time Chat**: Interactive chat interface with conversation history
-- 📄 **Document Management**: Upload and manage knowledge base documents (PDF, TXT, DOCX, MD)
-- 📊 **Analytics Dashboard**: Monitor usage, performance, and user satisfaction
-- 🔍 **Source Attribution**: See which documents were used to generate responses
+### 🤖 Core AI Capabilities
+- **Multi-LLM Support**: Choose between OpenAI GPT, Anthropic Claude, or Google Gemini
+- **RAG Pipeline**: Semantic search with ChromaDB vector database
+- **Context-Aware Responses**: Intelligent retrieval with source attribution
+- **Auto-Categorization**: Automatic message classification by topic
+- **LLM Comparison**: Side-by-side comparison of different models' responses
+- **Conversation Memory**: Multi-turn conversations with full context preservation
 
-### Advanced Features
-- **Vector Database**: ChromaDB for fast semantic search
+### 📄 Document Management
+- **Multi-Format Support**: PDF, TXT, DOCX, Markdown processing
+- **Drag-and-Drop Upload**: Intuitive file upload interface
 - **Smart Chunking**: Intelligent document splitting for optimal retrieval
-- **Conversation Memory**: Multi-turn conversations with context preservation
-- **Multi-format Support**: PDF, TXT, DOCX, Markdown document processing
-- **File Upload**: Drag-and-drop interface with real-time processing
-- **Chat History**: Browse and continue previous conversations
-- **Feedback System**: Rate AI responses to improve quality
-- **Analytics**: Time-series data, topic analysis, document usage stats
+- **Document Tagging**: Organize documents with custom tags and categories
+- **Multi-Document Chat**: Filter conversations by specific documents
+- **Document Analytics**: Track usage and performance metrics
 
-### User Experience
-- 🎨 **Modern UI**: Clean, responsive interface built with Tailwind CSS
-- 📱 **Mobile Responsive**: Works seamlessly on all devices
-- ⚡ **Fast Performance**: Optimized for speed with React Query caching
-- 🔄 **Real-time Updates**: Instant feedback and status updates
-- 🎯 **Intuitive Navigation**: Easy-to-use sidebar navigation
+### 💬 Chat Experience
+- **Real-Time Chat**: WebSocket-based instant messaging
+- **Chat Templates**: Quick-start questions for common topics
+- **Voice Input**: Speech-to-text for hands-free interaction
+- **Message Feedback**: Thumbs up/down rating system
+- **PDF Export**: Generate downloadable conversation reports
+- **Chat History**: Browse, search, and continue previous conversations
+
+### 📊 Analytics & Monitoring
+- **Real-Time Dashboard**: Live metrics with auto-refresh
+- **Time-Series Analysis**: Track trends over time
+- **Topic Analysis**: Popular topics and conversation patterns
+- **Document Usage Stats**: Most referenced documents
+- **User Satisfaction Metrics**: Average ratings and feedback
+- **Activity Logs**: Comprehensive audit trail of all system actions
+
+### 🔔 Notifications & Alerts
+- **Toast Notifications**: Real-time success/error/warning alerts
+- **Auto-Dismiss**: Configurable notification duration
+- **Action Feedback**: Instant confirmation for uploads, deletions, exports
+
+### 🔐 Security & Authentication
+- **JWT Authentication**: Secure token-based auth system
+- **User Management**: Registration, login, logout
+- **Activity Logging**: Track all user actions for audit
+- **CORS Protection**: Configurable origin restrictions
+
+### 🎨 User Experience
+- **Dark/Light Mode**: Theme toggle with system preference detection
+- **Modern UI**: Clean, responsive Tailwind CSS design
+- **Mobile Responsive**: Optimized for all screen sizes
+- **Fast Performance**: React Query caching and optimization
+- **Intuitive Navigation**: Sidebar with icon-based navigation
 
 ## 🛠 Tech Stack
 
@@ -113,12 +138,38 @@ A production-ready, full-stack **Retrieval-Augmented Generation (RAG)** customer
 
 ### Prerequisites
 
-- **Python** 3.10 or higher
-- **Node.js** 18 or higher
-- **PostgreSQL** 13 or higher
+- **Docker** and **Docker Compose** (recommended for one-command setup)
+- **OR** Manual setup requires:
+  - Python 3.10+
+  - Node.js 18+
+  - PostgreSQL 13+
 - **API Keys** for at least one LLM provider (OpenAI, Anthropic, or Google)
 
-### Installation
+### Quick Start (Recommended) 🎯
+
+**One-command installation with Docker:**
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/rag_system.git
+cd rag_system
+
+# Run setup script
+chmod +x setup.sh
+./setup.sh
+```
+
+The setup script will:
+✅ Check Docker and Docker Compose installation
+✅ Create .env configuration file
+✅ Build all containers
+✅ Start all services (backend, frontend, database)
+✅ Run health checks
+✅ Open your browser automatically
+
+**Important:** Edit the `.env` file and add your LLM API key(s) before the setup completes.
+
+### Manual Installation
 
 #### 1. Clone the Repository
 
@@ -127,8 +178,49 @@ git clone https://github.com/yourusername/rag_system.git
 cd rag_system
 ```
 
-#### 2. Backend Setup
+#### 2. Environment Configuration
 
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit with your API keys
+nano .env
+```
+
+**Required environment variables:**
+```env
+# At least ONE LLM API key is required
+OPENAI_API_KEY=your_openai_key_here
+ANTHROPIC_API_KEY=your_anthropic_key_here
+GOOGLE_API_KEY=your_google_key_here
+
+# Database (auto-configured with Docker)
+DB_USER=raguser
+DB_PASSWORD=ragpassword
+DB_NAME=rag_db
+DB_PORT=5432
+```
+
+#### 3. Start with Docker Compose
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+#### 4. Manual Setup (Without Docker)
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+**Backend Setup:**
 ```bash
 cd backend
 
@@ -139,75 +231,33 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file
-cp .env.example .env
+# Setup PostgreSQL database
+createdb rag_db
 
-# Edit .env with your configuration
-nano .env
+# Start backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Required environment variables:**
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/rag_system
-GOOGLE_API_KEY=your_gemini_api_key_here
-# Or use OpenAI/Anthropic
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-```
-
-#### 3. Database Setup
-
+**Frontend Setup:**
 ```bash
-# Create PostgreSQL database
-createdb rag_system
-
-# Run migrations (tables will be created automatically on first run)
-```
-
-#### 4. Frontend Setup
-
-```bash
-cd ../frontend
+cd frontend
 
 # Install dependencies
 npm install
 
-# Create .env file
-cp .env.example .env
-
-# Edit if needed (default points to localhost:8000)
-```
-
-#### 5. Load Sample Documents
-
-```bash
-# Sample documents are in sample_documents/
-# You can upload them through the UI after starting the application
-```
-
-### Running the Application
-
-#### Start Backend (Terminal 1)
-
-```bash
-cd backend
-source venv/bin/activate
-python -m app.main
-
-# Or use uvicorn directly:
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Backend will be available at `http://localhost:8000`
-
-#### Start Frontend (Terminal 2)
-
-```bash
-cd frontend
+# Start development server
 npm run dev
 ```
+</details>
 
-Frontend will be available at `http://localhost:5173`
+### Accessing the Application
+
+Once running, access:
+
+- **Frontend UI**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
 
 ## ⚙️ Configuration
 
@@ -251,35 +301,62 @@ VITE_API_URL=http://localhost:8000
 
 ## 📖 Usage
 
-### 1. Upload Documents
+### 1. Upload & Manage Documents
 
 1. Navigate to **Documents** page
-2. Drag and drop files or click to select
-3. Supported formats: PDF, TXT, DOCX, MD
-4. Wait for processing to complete
+2. Drag and drop files or click to select (PDF, TXT, DOCX, MD)
+3. Add tags to organize documents by category
+4. View processing status and metadata
+5. Delete or re-tag documents as needed
 
 ### 2. Chat with AI
 
 1. Go to **Chat** page
-2. Type your question in the input box
-3. View AI response with source attribution
-4. Continue multi-turn conversations
+2. Select LLM provider and model from dropdown
+3. Choose chat templates for quick questions, or type your own
+4. Use 🎤 **voice input** button for speech-to-text
+5. Filter by specific documents for focused answers
+6. View AI response with **source attribution**
+7. Rate responses with 👍/👎 feedback
+8. Export conversation as **PDF report**
 
-### 3. View Analytics
+### 3. Compare LLM Responses
 
-1. Visit **Analytics** page
-2. Monitor key metrics:
+1. Visit **Comparison** page
+2. Enter a question to test
+3. Select multiple LLM models to compare
+4. View side-by-side responses
+5. Analyze differences in answers, speed, and quality
+
+### 4. Monitor Analytics
+
+1. Open **Analytics** page
+2. View real-time dashboard with:
    - Total conversations and messages
-   - Average ratings
-   - Time-series trends
-   - Popular topics
+   - Average satisfaction ratings
+   - Time-series trends (7/30/90 days)
+   - Popular topics and categories
+   - Document usage statistics
+   - Auto-refresh every 30 seconds
 
-### 4. Browse History
+### 5. Browse History
 
-1. Open **History** page
-2. View all past conversations
-3. Click to view full conversation
-4. Continue previous chats or delete them
+1. Visit **History** page
+2. Search and filter past conversations
+3. View conversation metadata and categories
+4. Click to view full conversation
+5. Continue previous chats or delete them
+
+### 6. Review Activity Logs
+
+1. Go to **Activity Logs** page
+2. Monitor all system actions:
+   - Document uploads/deletes
+   - Chat messages sent
+   - User authentication events
+3. Filter by action type, resource, status
+4. Search by description
+5. View statistics and trends
 
 ## 📚 API Documentation
 
@@ -292,30 +369,57 @@ Once the backend is running, visit:
 
 ### Key Endpoints
 
+#### Authentication
+```
+POST /api/auth/register         # Create new user
+POST /api/auth/login            # Login user
+GET  /api/auth/me               # Get current user
+```
+
 #### Chat
 ```
-POST /api/chat/
-GET /api/chat/conversations
-GET /api/chat/conversations/{id}
-DELETE /api/chat/conversations/{id}
-POST /api/chat/feedback
+POST   /api/chat/               # Send message
+GET    /api/chat/conversations  # List conversations
+GET    /api/chat/conversations/{id}  # Get conversation
+DELETE /api/chat/conversations/{id}  # Delete conversation
+POST   /api/chat/feedback       # Submit message rating
+POST   /api/chat/compare        # Compare LLM responses
 ```
 
 #### Documents
 ```
-POST /api/documents/upload
-GET /api/documents/
-GET /api/documents/{id}
-DELETE /api/documents/{id}
-GET /api/documents/stats/overview
+POST   /api/documents/upload    # Upload document
+GET    /api/documents/          # List documents
+GET    /api/documents/{id}      # Get document
+DELETE /api/documents/{id}      # Delete document
+GET    /api/documents/stats/overview  # Document stats
+PUT    /api/documents/{id}/tags # Update document tags
+```
+
+#### Tags
+```
+GET    /api/tags/               # List all tags
+POST   /api/tags/               # Create tag
+PUT    /api/tags/{id}           # Update tag
+DELETE /api/tags/{id}           # Delete tag
+GET    /api/tags/{id}/documents # Get documents by tag
 ```
 
 #### Analytics
 ```
-GET /api/analytics/summary
-GET /api/analytics/time-series?days=7
-GET /api/analytics/top-topics?limit=10
-GET /api/analytics/document-usage
+GET /api/analytics/summary            # Overall metrics
+GET /api/analytics/time-series        # Time-based trends
+GET /api/analytics/top-topics         # Popular topics
+GET /api/analytics/document-usage     # Document stats
+GET /api/analytics/real-time          # Real-time metrics
+```
+
+#### Activity Logs
+```
+GET    /api/logs/               # List activity logs
+GET    /api/logs/stats          # Log statistics
+POST   /api/logs/               # Create log entry
+DELETE /api/logs/{id}           # Delete log
 ```
 
 ## 📁 Project Structure
@@ -324,52 +428,175 @@ GET /api/analytics/document-usage
 rag_system/
 ├── backend/
 │   ├── app/
-│   │   ├── api/              # API endpoints
+│   │   ├── api/                    # API endpoints
+│   │   │   ├── auth.py             # Authentication
+│   │   │   ├── chat.py             # Chat & conversations
+│   │   │   ├── documents.py        # Document management
+│   │   │   ├── analytics.py        # Analytics & metrics
+│   │   │   ├── tags.py             # Document tags
+│   │   │   └── activity_logs.py    # Activity logging
+│   │   ├── core/                   # Core configuration
+│   │   │   ├── config.py           # App settings
+│   │   │   ├── database.py         # Database connection
+│   │   │   └── security.py         # JWT & auth utils
+│   │   ├── models/                 # Database models
+│   │   │   ├── user.py             # User model
+│   │   │   ├── document.py         # Document model
+│   │   │   ├── conversation.py     # Conversation & messages
+│   │   │   ├── tag.py              # Tag model
+│   │   │   └── activity_log.py     # Activity log model
+│   │   ├── schemas/                # Pydantic schemas
+│   │   │   ├── auth.py
 │   │   │   ├── chat.py
-│   │   │   ├── documents.py
-│   │   │   └── analytics.py
-│   │   ├── core/             # Core configuration
-│   │   │   ├── config.py
-│   │   │   └── database.py
-│   │   ├── models/           # Database models
 │   │   │   ├── document.py
-│   │   │   ├── conversation.py
-│   │   │   └── analytics.py
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── services/         # Business logic
-│   │   │   ├── llm_provider.py
-│   │   │   ├── vector_store.py
-│   │   │   ├── rag_service.py
-│   │   │   └── document_processor.py
-│   │   └── main.py           # FastAPI app
-│   ├── data/                 # Data storage
-│   │   ├── documents/        # Uploaded files
-│   │   └── vectordb/         # ChromaDB data
+│   │   │   ├── tag.py
+│   │   │   └── activity_log.py
+│   │   ├── services/               # Business logic
+│   │   │   ├── llm_provider.py     # Multi-LLM integration
+│   │   │   ├── vector_store.py     # ChromaDB manager
+│   │   │   ├── rag_service.py      # RAG pipeline
+│   │   │   └── document_processor.py # Doc processing
+│   │   ├── utils/                  # Utilities
+│   │   │   └── activity_logger.py  # Activity log helper
+│   │   └── main.py                 # FastAPI app
+│   ├── data/                       # Data storage
+│   │   ├── documents/              # Uploaded files
+│   │   └── chroma_db/              # Vector database
 │   ├── requirements.txt
 │   └── .env.example
 ├── frontend/
 │   ├── src/
-│   │   ├── api/              # API client
-│   │   ├── components/       # React components
-│   │   ├── pages/            # Page components
-│   │   ├── types/            # TypeScript types
-│   │   ├── utils/            # Utility functions
-│   │   ├── App.tsx
-│   │   └── main.tsx
+│   │   ├── api/                    # API client
+│   │   │   └── client.ts           # Axios client & endpoints
+│   │   ├── components/             # React components
+│   │   │   ├── Layout.tsx          # Main layout
+│   │   │   ├── ThemeToggle.tsx     # Dark mode toggle
+│   │   │   ├── Toast.tsx           # Notification toasts
+│   │   │   └── ...                 # Other components
+│   │   ├── contexts/               # React contexts
+│   │   │   ├── AuthContext.tsx     # Auth state
+│   │   │   └── ToastContext.tsx    # Toast notifications
+│   │   ├── pages/                  # Page components
+│   │   │   ├── ChatPage.tsx        # Main chat interface
+│   │   │   ├── DocumentsPage.tsx   # Document management
+│   │   │   ├── ComparisonPage.tsx  # LLM comparison
+│   │   │   ├── AnalyticsPage.tsx   # Analytics dashboard
+│   │   │   ├── ActivityLogsPage.tsx # Activity logs
+│   │   │   ├── HistoryPage.tsx     # Chat history
+│   │   │   ├── LoginPage.tsx       # Login
+│   │   │   └── RegisterPage.tsx    # Registration
+│   │   ├── types/                  # TypeScript types
+│   │   ├── utils/                  # Utility functions
+│   │   │   ├── cn.ts               # Class name utils
+│   │   │   └── pdfExport.ts        # PDF generation
+│   │   ├── App.tsx                 # Main app component
+│   │   └── main.tsx                # Entry point
 │   ├── package.json
+│   ├── tailwind.config.js
 │   └── .env.example
-├── sample_documents/         # Sample knowledge base
+├── sample_documents/               # Sample knowledge base
 │   ├── product_catalog.md
 │   ├── return_policy.md
 │   ├── warranty_terms.md
 │   ├── shipping_delivery.md
 │   └── faq.md
-└── README.md
+├── docker-compose.yml              # Docker orchestration
+├── setup.sh                        # One-command setup script
+├── .env.example                    # Environment template
+└── README.md                       # This file
+```
+
+## 🐳 Docker Commands
+
+### Common Operations
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs (all services)
+docker-compose logs -f
+
+# View logs (specific service)
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (clean slate)
+docker-compose down -v
+
+# Restart a service
+docker-compose restart backend
+
+# Rebuild after code changes
+docker-compose up -d --build
+
+# Check service status
+docker-compose ps
+
+# Execute command in container
+docker-compose exec backend python -c "print('Hello')"
+docker-compose exec postgres psql -U postgres -d rag_db
+```
+
+### Database Operations
+
+```bash
+# Access PostgreSQL shell
+docker-compose exec postgres psql -U postgres -d rag_db
+
+# Backup database
+docker-compose exec postgres pg_dump -U postgres rag_db > backup.sql
+
+# Restore database
+docker-compose exec -T postgres psql -U postgres rag_db < backup.sql
+
+# View database tables
+docker-compose exec postgres psql -U postgres -d rag_db -c "\dt"
 ```
 
 ## 🚢 Deployment
 
-### Manual Deployment
+### Docker Production Deployment
+
+#### 1. Update docker-compose.yml for Production
+
+```yaml
+# Set production environment variables
+environment:
+  DEBUG: "False"
+  CORS_ORIGINS: "https://yourdomain.com"
+
+# Use production command
+command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+```
+
+#### 2. Production Environment Variables
+
+```bash
+# Copy and edit .env for production
+cp .env.example .env
+
+# Set production values
+DEBUG=False
+SECRET_KEY=<generate-with-openssl-rand-hex-32>
+DB_PASSWORD=<strong-password>
+CORS_ORIGINS=https://yourdomain.com
+```
+
+#### 3. Deploy with Docker
+
+```bash
+# Build and start
+docker-compose up -d --build
+
+# Check health
+curl http://localhost:8000/health
+```
+
+### Manual Deployment (Without Docker)
 
 #### Backend (Production)
 
@@ -391,13 +618,82 @@ npm run build
 # Build output is in dist/
 ```
 
-### Environment Variables for Production
+### Production Checklist
 
-- Set `DEBUG=False`
-- Use strong database credentials
-- Configure proper CORS origins
-- Use environment secrets management
-- Enable HTTPS
+- ✅ Set `DEBUG=False` in .env
+- ✅ Generate strong `SECRET_KEY` with `openssl rand -hex 32`
+- ✅ Use strong database credentials
+- ✅ Configure proper `CORS_ORIGINS`
+- ✅ Set up HTTPS with SSL certificates
+- ✅ Configure firewall rules
+- ✅ Set up monitoring and logging
+- ✅ Configure automatic backups
+- ✅ Use environment secrets management (AWS Secrets Manager, etc.)
+
+## 🔧 Troubleshooting
+
+### Backend Not Starting
+
+```bash
+# Check backend logs
+docker-compose logs backend
+
+# Common issues:
+# 1. Missing API key - Add to .env
+# 2. Database connection - Check postgres service
+# 3. Port already in use - Change BACKEND_PORT in .env
+```
+
+### Frontend Not Loading
+
+```bash
+# Check frontend logs
+docker-compose logs frontend
+
+# Verify API URL
+echo $VITE_API_URL  # Should be http://localhost:8000
+
+# Check backend is responding
+curl http://localhost:8000/health
+```
+
+### Database Issues
+
+```bash
+# Restart database
+docker-compose restart postgres
+
+# Reset database (WARNING: deletes all data)
+docker-compose down -v
+docker-compose up -d
+```
+
+### Document Upload Failing
+
+```bash
+# Check file permissions
+ls -la backend/data/documents/
+
+# Check ChromaDB
+docker-compose exec backend ls -la /app/data/chroma_db/
+
+# View backend logs during upload
+docker-compose logs -f backend
+```
+
+### Performance Issues
+
+```bash
+# Check resource usage
+docker stats
+
+# Increase database connection pool in .env
+DB_POOL_SIZE=10
+DB_MAX_OVERFLOW=20
+
+# Reduce vector search results
+VECTOR_SEARCH_K=3
+```
 
 ## 🤝 Contributing
 
