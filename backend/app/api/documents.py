@@ -88,10 +88,33 @@ async def upload_document(
         db.commit()
         db.refresh(db_document)
 
+        # Log successful upload
+        log_activity(
+            db=db,
+            action_type="upload",
+            resource_type="document",
+            resource_id=db_document.id,
+            description=f"Document '{file.filename}' uploaded and processed successfully",
+            status="success",
+            metadata={"file_size": file_size, "chunks": chunks_count}
+        )
+
     except Exception as e:
         db_document.status = DocumentStatus.FAILED
         db_document.error_message = str(e)
         db.commit()
+
+        # Log failed upload
+        log_activity(
+            db=db,
+            action_type="upload",
+            resource_type="document",
+            resource_id=db_document.id,
+            description=f"Failed to process document '{file.filename}'",
+            status="failed",
+            metadata={"error": str(e)}
+        )
+
         raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
 
     return db_document
@@ -139,8 +162,19 @@ def delete_document(
         os.remove(document.file_path)
 
     # Delete from database
+    filename = document.filename
     db.delete(document)
     db.commit()
+
+    # Log deletion
+    log_activity(
+        db=db,
+        action_type="delete",
+        resource_type="document",
+        resource_id=document_id,
+        description=f"Document '{filename}' deleted",
+        status="success"
+    )
 
     return None
 

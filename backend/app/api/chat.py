@@ -22,6 +22,7 @@ from app.models import Conversation, Message, MessageFeedback
 from app.services.rag_service import RAGService
 from app.services.analytics_service import AnalyticsService
 from app.utils.categorizer import MessageCategorizer
+from app.utils.activity_logger import log_activity
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -114,6 +115,21 @@ def send_message(
             "llm_provider": request.llm_provider or "openai",
         },
         value=response_time
+    )
+
+    # Log activity
+    log_activity(
+        db=db,
+        action_type="chat",
+        resource_type="conversation",
+        resource_id=conversation.id,
+        description=f"Chat message sent in conversation '{conversation.title}'",
+        status="success",
+        metadata={
+            "message_length": len(request.message),
+            "response_time": response_time,
+            "sources_count": len(sources)
+        }
     )
 
     return assistant_message
