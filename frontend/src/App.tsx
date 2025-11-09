@@ -8,6 +8,7 @@ import ComparisonPage from './pages/ComparisonPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ActivityLogsPage from './pages/ActivityLogsPage';
+import EmbedPage from './pages/EmbedPage';
 import { ToastProvider } from './contexts/ToastContext';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/embed" element={<EmbedPage />} />
         <Route
           path="/*"
           element={

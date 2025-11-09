@@ -21,6 +21,9 @@ export default function ChatPage() {
   const [isListening, setIsListening] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
   const [showDocSelector, setShowDocSelector] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [showModelSelector, setShowModelSelector] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const queryClient = useQueryClient();
@@ -80,6 +83,17 @@ export default function ChatPage() {
 
   const completedDocuments = documents.filter((doc) => doc.status === 'completed');
 
+  // Get available LLM providers
+  const { data: providers = [] } = useQuery({
+    queryKey: ['providers'],
+    queryFn: () => chatApi.getProviders(),
+  });
+
+  // Get available models for selected provider
+  const availableModels = selectedProvider
+    ? providers.find(p => p.provider === selectedProvider)?.models || []
+    : [];
+
   const messages = conversation?.messages || [];
 
   // Send message mutation
@@ -101,6 +115,8 @@ export default function ChatPage() {
     if (!input.trim()) return;
 
     const documentIds = selectedDocuments.length > 0 ? selectedDocuments : undefined;
+    const llmProvider = selectedProvider || undefined;
+    const model = selectedModel || undefined;
 
     if (useWebSocketMode && isConnected) {
       // Use WebSocket
@@ -108,6 +124,8 @@ export default function ChatPage() {
         message: input,
         conversation_id: currentConversationId,
         document_ids: documentIds,
+        llm_provider: llmProvider,
+        model: model,
       });
 
       if (success) {
@@ -121,6 +139,8 @@ export default function ChatPage() {
         message: input,
         conversation_id: currentConversationId,
         document_ids: documentIds,
+        llm_provider: llmProvider,
+        model: model,
       });
     }
   };
@@ -295,6 +315,16 @@ export default function ChatPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowModelSelector(!showModelSelector)}
+            className={`btn-secondary text-xs flex items-center gap-1 ${
+              selectedProvider ? 'border-primary-500 bg-primary-50' : ''
+            }`}
+            title="Select AI Model"
+          >
+            <Bot className="w-3.5 h-3.5" />
+            {selectedProvider ? `${selectedProvider}${selectedModel ? `: ${selectedModel}` : ''}` : 'Model'}
+          </button>
+          <button
             onClick={() => setShowDocSelector(!showDocSelector)}
             className={`btn-secondary text-xs flex items-center gap-1 ${
               selectedDocuments.length > 0 ? 'border-primary-500 bg-primary-50' : ''
@@ -428,6 +458,87 @@ export default function ChatPage() {
       {/* Input */}
       <div className="bg-white border-t border-gray-200 px-6 py-4">
         <div className="max-w-4xl mx-auto">
+          {/* Model Selector Panel */}
+          {showModelSelector && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-900">Select AI Model</h3>
+                <button
+                  onClick={() => {
+                    setSelectedProvider('');
+                    setSelectedModel('');
+                  }}
+                  className="text-xs text-gray-600 hover:text-gray-700"
+                >
+                  Clear
+                </button>
+              </div>
+
+              {providers.length > 0 ? (
+                <div className="space-y-3">
+                  {/* Provider Selection */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      Provider
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {providers.map((provider) => (
+                        <button
+                          key={provider.provider}
+                          onClick={() => {
+                            setSelectedProvider(provider.provider);
+                            setSelectedModel('');
+                          }}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            selectedProvider === provider.provider
+                              ? 'bg-primary-500 text-white'
+                              : 'bg-white border border-gray-200 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                          }`}
+                        >
+                          {provider.provider === 'openai' && '🤖 OpenAI'}
+                          {provider.provider === 'anthropic' && '🧠 Anthropic'}
+                          {provider.provider === 'google' && '🔍 Google'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Model Selection */}
+                  {selectedProvider && availableModels.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                        Model
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {availableModels.map((model) => (
+                          <button
+                            key={model}
+                            onClick={() => setSelectedModel(model)}
+                            className={`px-3 py-2 rounded-lg text-xs transition-colors text-left ${
+                              selectedModel === model
+                                ? 'bg-primary-500 text-white'
+                                : 'bg-white border border-gray-200 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                            }`}
+                          >
+                            {model}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedProvider && selectedModel && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      Using <strong>{selectedProvider}</strong> with model <strong>{selectedModel}</strong>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Loading providers...</p>
+              )}
+            </div>
+          )}
+
           {/* Document Selector Panel */}
           {showDocSelector && (
             <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
