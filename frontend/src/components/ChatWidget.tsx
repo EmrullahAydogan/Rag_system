@@ -285,7 +285,6 @@ export default function ChatWidget({
                 onKeyDown={handleKeyPress}
                 placeholder="Type your message..."
                 className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                style={{ focusRing: primaryColor }}
                 disabled={sendMessageMutation.isPending}
               />
               <button

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Send, Bot, User, FileText, Wifi, WifiOff, ThumbsUp, ThumbsDown, Zap, Mic, MicOff, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatApi, documentsApi } from '@/api/client';
-import type { Message, ChatRequest, Document } from '@/types';
+import type { Message, ChatRequest } from '@/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatRelativeTime } from '@/utils/format';
 import { useWebSocket } from '@/hooks/useWebSocket';
